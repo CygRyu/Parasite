@@ -1,0 +1,3153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Parasite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        parasite: {
+                            red: '#8a0303',
+                            darkRed: '#5a0101',
+                            green: '#1a3a1a',
+                            darkGreen: '#0a1f0a',
+                            black: '#0a0a0a',
+                            gray: '#1a1a1a',
+                            lightGray: '#2a2a2a'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        tech: ['Share Tech Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            font-family: 'Share Tech Mono', monospace;
+            background-image: radial-gradient(circle at 50% 50%, #1a0a0a 0%, #0a0a0a 100%);
+        }
+        
+        .parasite-container {
+            background: linear-gradient(135deg, #1a0a0a 0%, #0a0a0a 100%);
+            border: 1px solid #8a0303;
+            box-shadow: 0 0 15px #8a030355;
+        }
+        
+        .parasite-btn {
+            background: linear-gradient(180deg, #8a0303 0%, #5a0101 100%);
+            text-shadow: 0 0 5px #ff0000aa;
+            transition: all 0.3s ease;
+        }
+        
+        .parasite-btn:hover {
+            background: linear-gradient(180deg, #a50404 0%, #6a0202 100%);
+            box-shadow: 0 0 10px #ff0000aa;
+        }
+        
+        .mitochondria {
+            background: #1a3a1a;
+            box-shadow: 0 0 15px #1a3a1a88;
+            transition: all 0.5s ease;
+        }
+        
+        .progress-container {
+            background: #1a1a1a;
+            box-shadow: inset 0 0 5px #000000;
+        }
+        
+        .screen-glow {
+            text-shadow: 0 0 5px #8a0303aa;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        input[type="number"] {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            border: 1px solid #8a0303;
+        }
+        
+        input[type="text"] {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            border: 1px solid #8a0303;
+        }
+        
+        .dark {
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+        }
+        
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            border: 1px solid #8a0303;
+            box-shadow: 0 0 10px rgba(138, 3, 3, 0.5);
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+        
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #8a0303 transparent transparent transparent;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Main tab system styles */
+        .main-tab {
+            cursor: pointer;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            border-radius: 0.25rem 0.25rem 0 0;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            border-bottom: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.875rem;
+        }
+        
+        .main-tab.active {
+            background-color: rgba(138, 3, 3, 0.2);
+            border-color: #8a0303;
+            border-bottom: none;
+        }
+        
+        .main-tab-content {
+            display: none;
+        }
+        
+        .main-tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Chart tab system styles */
+        .chart-tab {
+            overflow: hidden;
+        }
+        
+        .chart-tab-content {
+            display: none;
+        }
+        
+        .chart-tab-content.active {
+            display: block;
+        }
+        
+        .support-btn {
+            background: linear-gradient(90deg, #5D5CDE 0%, #4D4CCE 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .support-btn:hover {
+            background: linear-gradient(90deg, #6D6CEE 0%, #5D5CDE 100%);
+            box-shadow: 0 0 10px rgba(93, 92, 222, 0.5);
+        }
+        
+        .paypal-btn {
+            background: linear-gradient(90deg, #003087 0%, #0070BA 100%);
+        }
+        
+        .kofi-btn {
+            background: linear-gradient(90deg, #FF5E5B 0%, #FF7E7B 100%);
+        }
+        
+        /* Prediction styles */
+        .prediction-arrow-up {
+            color: #1a7a1a;
+        }
+        
+        .prediction-arrow-down {
+            color: #8a0303;
+        }
+        
+        .prediction-arrow-stable {
+            color: #aa8a3a;
+        }
+
+        /* Badge styles */
+        .badge {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 1px solid #8a0303;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .badge:hover {
+            box-shadow: 0 0 10px rgba(138, 3, 3, 0.5);
+        }
+        
+        .badge-locked {
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+        
+        .badge-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .badge-description {
+            font-size: 0.75rem;
+            color: #a0a0a0;
+        }
+        
+        /* Prestige animation */
+        @keyframes prestige-glow {
+            0% { box-shadow: 0 0 5px rgba(138, 3, 3, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(138, 3, 3, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(138, 3, 3, 0.5); }
+        }
+        
+        .prestige-ready {
+            animation: prestige-glow 2s infinite;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a0a0a 0%, #0a0a0a 100%);
+            margin: 15% auto;
+            padding: 1.5rem;
+            border: 1px solid #8a0303;
+            box-shadow: 0 0 15px rgba(138, 3, 3, 0.5);
+            width: 80%;
+            max-width: 500px;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-btn:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        /* Affinity indicator styles */
+        .affinity-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .affinity-strong {
+            background-color: #1a7a1a;
+        }
+        
+        .affinity-medium {
+            background-color: #aa8a3a;
+        }
+        
+        .affinity-weak {
+            background-color: #8a0303;
+        }
+        
+        .affinity-neutral {
+            background-color: #3a3a4a;
+        }
+    </style>
+</head>
+<body class="dark min-h-screen py-8 px-4">
+    <div class="max-w-md mx-auto">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-orbitron font-bold text-white screen-glow mb-2">SLEEP <span class="text-parasite-red">PARASITE</span></h1>
+            <p class="font-tech text-sm text-gray-400">Mitochondria Cultivation System</p>
+            <div id="prestige-indicator" class="hidden mt-2">
+                <span id="prestige-level" class="badge bg-parasite-red bg-opacity-20 text-xs py-1 px-2 rounded">Prestige Level: 0</span>
+            </div>
+        </header>
+        
+        <!-- Main Tab Navigation -->
+        <div class="flex border-b border-parasite-red mb-4">
+            <button class="main-tab flex-1 active" onclick="openMainTab(event, 'status-tab')">STATUS</button>
+            <button class="main-tab flex-1" onclick="openMainTab(event, 'input-tab')">INPUT</button>
+            <button class="main-tab flex-1" onclick="openMainTab(event, 'analysis-tab')">ANALYSIS</button>
+            <button class="main-tab flex-1" onclick="openMainTab(event, 'records-tab')">RECORDS</button>
+            <button class="main-tab flex-1" onclick="openMainTab(event, 'data-tab')">DATA</button>
+        </div>
+        
+        <!-- Status Tab Content -->
+        <div id="status-tab" class="main-tab-content active">
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <div id="parasite-status" class="text-center mb-4">
+                    <h2 class="font-orbitron text-xl mb-2">PARASITE STATUS</h2>
+                    <p id="evolution-stage" class="text-parasite-red font-bold mb-1">DORMANT</p>
+                    <p id="evolution-pattern" class="text-sm mb-1">Standard Type</p>
+                    <p id="days-active" class="text-sm text-gray-400">Day: 1</p>
+                </div>
+                
+                <div class="progress-container rounded-full h-6 mb-4">
+                    <div id="mitochondria-power" class="mitochondria h-full rounded-full" style="width: 0%;"></div>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-2 text-center text-xs mb-4">
+                    <div>
+                        <p class="tooltip text-gray-400">
+                            POWER
+                            <span class="tooltip-text">Overall energy generated by sleep quality. Increases based on overall sleep quality.</span>
+                        </p>
+                        <p id="power-stat" class="font-bold">0</p>
+                        <p id="power-prediction" class="text-xs"></p>
+                        <div id="power-affinity" class="hidden mt-1"></div>
+                    </div>
+                    <div>
+                        <p class="tooltip text-gray-400">
+                            STABILITY
+                            <span class="tooltip-text">Cellular structure integrity. Primarily affected by deep and light sleep.</span>
+                        </p>
+                        <p id="stability-stat" class="font-bold">0</p>
+                        <p id="stability-prediction" class="text-xs"></p>
+                        <div id="stability-affinity" class="hidden mt-1"></div>
+                    </div>
+                    <div>
+                        <p class="tooltip text-gray-400">
+                            ADAPTATION
+                            <span class="tooltip-text">Neural flexibility and learning capacity. Primarily affected by REM sleep.</span>
+                        </p>
+                        <p id="adaptation-stat" class="font-bold">0</p>
+                        <p id="adaptation-prediction" class="text-xs"></p>
+                        <div id="adaptation-affinity" class="hidden mt-1"></div>
+                    </div>
+                    <div>
+                        <p class="tooltip text-gray-400">
+                            RESONANCE
+                            <span class="tooltip-text">Harmony with host physiology. Affected by total sleep time.</span>
+                        </p>
+                        <p id="resonance-stat" class="font-bold">0</p>
+                        <p id="resonance-prediction" class="text-xs"></p>
+                        <div id="resonance-affinity" class="hidden mt-1"></div>
+                    </div>
+                </div>
+                
+                <div id="parasite-visual" class="mx-auto w-32 h-32 flex items-center justify-center rounded-full border border-parasite-red">
+                    <div id="organism" class="w-16 h-16 rounded-full bg-parasite-red pulse"></div>
+                </div>
+                
+                <p id="status-message" class="text-center mt-4 text-sm italic">Awaiting new sleep data...</p>
+            </div>
+            
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <h2 class="font-orbitron text-lg mb-3 text-center">GROWTH PREDICTION</h2>
+                <div class="space-y-3">
+                    <div class="text-sm">
+                        <p class="mb-1 font-bold">Next Evolution Stage:</p>
+                        <div id="evolution-prediction" class="bg-parasite-gray p-2 rounded text-sm"></div>
+                    </div>
+                    <div class="text-sm">
+                        <p class="mb-1 font-bold">Predicted Pattern Development:</p>
+                        <div id="pattern-prediction" class="bg-parasite-gray p-2 rounded text-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Input Tab Content -->
+        <div id="input-tab" class="main-tab-content">
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <h2 class="font-orbitron text-xl mb-4 text-center">SLEEP DATA INPUT</h2>
+                
+                <form id="sleep-form" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="awake-time" class="block text-sm text-gray-400 mb-1 tooltip">
+                                Awake (minutes)
+                                <span class="tooltip-text">Time spent awake during the night. Lower is better.</span>
+                            </label>
+                            <input type="number" id="awake-time" class="w-full rounded p-2 text-base" min="0" required>
+                        </div>
+                        <div>
+                            <label for="rem-time" class="block text-sm text-gray-400 mb-1 tooltip">
+                                REM (minutes)
+                                <span class="tooltip-text">Rapid Eye Movement sleep. Ideal: 90-120 minutes. Increases Adaptation.</span>
+                            </label>
+                            <input type="number" id="rem-time" class="w-full rounded p-2 text-base" min="0" required>
+                        </div>
+                        <div>
+                            <label for="light-time" class="block text-sm text-gray-400 mb-1 tooltip">
+                                Light Sleep (minutes)
+                                <span class="tooltip-text">Light non-REM sleep. Ideal: 240-300 minutes. Contributes to Stability.</span>
+                            </label>
+                            <input type="number" id="light-time" class="w-full rounded p-2 text-base" min="0" required>
+                        </div>
+                        <div>
+                            <label for="deep-time" class="block text-sm text-gray-400 mb-1 tooltip">
+                                Deep Sleep (minutes)
+                                <span class="tooltip-text">Slow wave sleep. Ideal: 90-120 minutes. Greatly increases Stability.</span>
+                            </label>
+                            <input type="number" id="deep-time" class="w-full rounded p-2 text-base" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="parasite-btn w-full py-3 rounded font-orbitron font-bold">PROCESS SLEEP DATA</button>
+                </form>
+            </div>
+            
+            <div class="parasite-container rounded-lg p-5">
+                <h2 class="font-orbitron text-xl mb-3 text-center">SLEEP LOG</h2>
+                <div id="sleep-log" class="h-40 overflow-y-auto font-tech text-xs space-y-2 p-2">
+                    <p class="text-gray-500">No entries recorded...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analysis Tab Content -->
+        <div id="analysis-tab" class="main-tab-content">
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <h2 class="font-orbitron text-xl mb-4 text-center">PARASITE ANALYSIS</h2>
+                
+                <div class="chart-tab mb-4 flex justify-around border-b border-parasite-red">
+                    <button class="tab-link text-sm py-2 px-3 active" onclick="openChartTab(event, 'sleep-quality-tab')">SLEEP QUALITY</button>
+                    <button class="tab-link text-sm py-2 px-3" onclick="openChartTab(event, 'stats-tab')">STATS EVOLUTION</button>
+                    <button class="tab-link text-sm py-2 px-3" onclick="openChartTab(event, 'forecast-tab')">FORECAST</button>
+                </div>
+                
+                <div id="sleep-quality-tab" class="chart-tab-content active">
+                    <canvas id="sleep-chart" class="w-full h-60"></canvas>
+                </div>
+                
+                <div id="stats-tab" class="chart-tab-content">
+                    <canvas id="stats-chart" class="w-full h-60"></canvas>
+                </div>
+                
+                <div id="forecast-tab" class="chart-tab-content">
+                    <canvas id="forecast-chart" class="w-full h-60"></canvas>
+                </div>
+            </div>
+            
+            <div class="parasite-container rounded-lg p-5">
+                <h2 class="font-orbitron text-lg mb-3 text-center">PARASITE EVOLUTION</h2>
+                <div class="space-y-3 text-sm">
+                    <p class="font-bold">Current Pattern: <span id="current-pattern" class="font-normal"></span></p>
+                    <p id="pattern-description" class="text-gray-400 text-xs italic"></p>
+                    <div class="mt-3">
+                        <p class="font-bold mb-1">Pattern Optimization Suggestions:</p>
+                        <ul id="pattern-suggestions" class="list-disc pl-5 text-xs space-y-1 text-gray-300"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Records Tab Content -->
+        <div id="records-tab" class="main-tab-content">
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <h2 class="font-orbitron text-xl mb-4 text-center">HALL OF RECORDS</h2>
+                
+                <div class="space-y-3">
+                    <div class="bg-parasite-gray bg-opacity-30 p-3 rounded-lg">
+                        <p class="font-bold mb-2">LIFETIME STATISTICS</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div>Total Playthroughs:</div>
+                            <div id="total-playthroughs" class="text-right">1</div>
+                            
+                            <div>Total Days:</div>
+                            <div id="total-days" class="text-right">0</div>
+                            
+                            <div>Highest Prestige:</div>
+                            <div id="highest-prestige" class="text-right">0</div>
+                            
+                            <div>Highest Evolution:</div>
+                            <div id="highest-evolution" class="text-right">DORMANT</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-parasite-gray bg-opacity-30 p-3 rounded-lg">
+                        <p class="font-bold mb-2">BEST STATS EVER ACHIEVED</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div>Power:</div>
+                            <div id="best-power" class="text-right">0</div>
+                            
+                            <div>Stability:</div>
+                            <div id="best-stability" class="text-right">0</div>
+                            
+                            <div>Adaptation:</div>
+                            <div id="best-adaptation" class="text-right">0</div>
+                            
+                            <div>Resonance:</div>
+                            <div id="best-resonance" class="text-right">0</div>
+                            
+                            <div>Mitochondria Power:</div>
+                            <div id="best-mitochondria" class="text-right">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-parasite-gray bg-opacity-30 p-3 rounded-lg">
+                        <p class="font-bold mb-2">SLEEP QUALITY RECORDS</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div>Best Sleep Quality:</div>
+                            <div id="best-sleep-quality" class="text-right">0%</div>
+                            
+                            <div>Average Sleep Quality:</div>
+                            <div id="avg-sleep-quality" class="text-right">0%</div>
+                            
+                            <div>Perfect Sleep Streaks:</div>
+                            <div id="perfect-sleep-streaks" class="text-right">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <h2 class="font-orbitron text-lg mb-3 text-center">ACHIEVEMENTS</h2>
+                <div id="achievements-container" class="grid grid-cols-1 gap-2">
+                    <!-- Achievements will be populated here dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Management Tab Content -->
+        <div id="data-tab" class="main-tab-content">
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <h2 class="font-orbitron text-xl mb-4 text-center">DATA MANAGEMENT</h2>
+                
+                <div class="space-y-4">
+                    <div class="flex space-x-2">
+                        <button id="export-btn" class="parasite-btn flex-1 py-2 rounded font-orbitron text-sm">EXPORT DATA</button>
+                        <button id="import-btn" class="parasite-btn flex-1 py-2 rounded font-orbitron text-sm">IMPORT DATA</button>
+                    </div>
+                    
+                    <div id="import-container" class="hidden space-y-2">
+                        <input type="text" id="import-data" placeholder="Paste encoded data here..." class="w-full rounded p-2 text-base">
+                        <button id="confirm-import" class="parasite-btn w-full py-2 rounded font-orbitron text-sm">CONFIRM IMPORT</button>
+                    </div>
+                    
+                    <div id="export-container" class="hidden space-y-2">
+                        <p class="text-xs text-gray-400 mb-1">Copy this code to save your progress:</p>
+                        <textarea id="export-data" readonly class="w-full h-20 rounded p-2 text-xs bg-parasite-gray border border-parasite-red"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="prestige-container" class="parasite-container rounded-lg p-5 mb-6 hidden">
+                <h2 class="font-orbitron text-lg mb-3 text-center">PARASITE PRESTIGE</h2>
+                <p class="text-sm mb-4">Reset your current progress to start a new cycle with enhanced abilities.</p>
+                
+                <div class="bg-parasite-gray bg-opacity-30 p-3 rounded-lg mb-4">
+                    <p class="font-bold mb-2">PRESTIGE BENEFITS</p>
+                    <ul class="text-sm space-y-1 list-disc pl-5">
+                        <li>Faster parasite evolution</li>
+                        <li>Increased stat gain per sleep cycle</li>
+                        <li>Develop unique sleep affinities based on your patterns</li>
+                        <li>Unlocked higher evolution stages</li>
+                        <li>Permanent record of your achievements</li>
+                    </ul>
+                </div>
+                
+                <div id="prestige-stats" class="bg-parasite-gray bg-opacity-30 p-3 rounded-lg mb-4">
+                    <p class="font-bold mb-2">CURRENT PRESTIGE STATS</p>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div>Current Prestige Level:</div>
+                        <div id="current-prestige-level" class="text-right">0</div>
+                        
+                        <div>Next Prestige Level:</div>
+                        <div id="next-prestige-level" class="text-right">1</div>
+                        
+                        <div>Base Stat Gain Multiplier:</div>
+                        <div id="stat-multiplier" class="text-right">+0%</div>
+                    </div>
+                    
+                    <div id="prestige-affinities" class="mt-3 hidden">
+                        <p class="font-bold mb-2">CURRENT STAT AFFINITIES</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="flex items-center">
+                                <span class="affinity-indicator mr-1" id="power-affinity-indicator"></span>
+                                Power Bonus:
+                            </div>
+                            <div class="text-right" id="power-affinity-value">+0%</div>
+                            
+                            <div class="flex items-center">
+                                <span class="affinity-indicator mr-1" id="stability-affinity-indicator"></span>
+                                Stability Bonus:
+                            </div>
+                            <div class="text-right" id="stability-affinity-value">+0%</div>
+                            
+                            <div class="flex items-center">
+                                <span class="affinity-indicator mr-1" id="adaptation-affinity-indicator"></span>
+                                Adaptation Bonus:
+                            </div>
+                            <div class="text-right" id="adaptation-affinity-value">+0%</div>
+                            
+                            <div class="flex items-center">
+                                <span class="affinity-indicator mr-1" id="resonance-affinity-indicator"></span>
+                                Resonance Bonus:
+                            </div>
+                            <div class="text-right" id="resonance-affinity-value">+0%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="prestige-btn" class="parasite-btn w-full py-3 rounded font-orbitron font-bold">INITIATE PRESTIGE CYCLE</button>
+            </div>
+            
+            <div class="parasite-container rounded-lg p-5 mb-6">
+                <h2 class="font-orbitron text-lg mb-3 text-center">SUPPORT THE DEVELOPER</h2>
+                <div class="flex flex-col space-y-2">
+                    <a href="https://ko-fi.com/cygryu" target="_blank" class="support-btn kofi-btn py-2 px-4 rounded text-center text-white font-medium">Support on Ko-Fi</a>
+                    <a href="https://www.paypal.com/paypalme/sofiansu?country.x=ID&locale.x=en_US" target="_blank" class="support-btn paypal-btn py-2 px-4 rounded text-center text-white font-medium">Support via PayPal</a>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <footer class="text-center text-xs text-gray-500 py-4">
+                <p>Developed by CygRyu</p>
+                <p class="mt-1">© 2025 Sleep Parasite</p>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- Prestige Confirmation Modal -->
+    <div id="prestige-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('prestige-modal')">&times;</span>
+            <h2 class="font-orbitron text-xl mb-4 text-center text-parasite-red">CONFIRM PRESTIGE</h2>
+            <p class="mb-4">You are about to reset your current progress and start a new cycle with enhanced abilities. This action cannot be undone.</p>
+            
+            <p class="mb-4 font-bold">Your records and achievements will be preserved.</p>
+            
+            <div id="prestige-affinity-preview" class="mb-4 p-3 bg-parasite-gray bg-opacity-30 rounded-lg">
+                <p class="font-bold mb-2">PREDICTED AFFINITIES FOR NEXT CYCLE</p>
+                <p class="text-xs mb-2 italic">Affinities are based on your sleep patterns in this cycle.</p>
+                <div id="affinity-preview-content"></div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button onclick="closeModal('prestige-modal')" class="flex-1 bg-parasite-gray py-2 px-4 rounded">CANCEL</button>
+                <button id="confirm-prestige-btn" class="flex-1 parasite-btn py-2 px-4 rounded">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check for dark mode preferences
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+        
+        // Game state
+        let gameState = {
+            day: 1,
+            evolutionStage: 0,
+            evolutionPattern: "STANDARD",
+            powerStat: 0,
+            stabilityStat: 0,
+            adaptationStat: 0,
+            resonanceStat: 0,
+            mitochondriaPower: 0,
+            sleepLog: [],
+            // Add historical data storage for charts
+            history: {
+                sleepQuality: [],
+                stats: []
+            },
+            // Prestige system and records
+            prestigeLevel: 0,
+            // Add prestige affinities
+            prestigeAffinities: null,
+            sleepPatterns: {
+                remFocus: 0,
+                deepFocus: 0,
+                lightFocus: 0,
+                totalSleepFocus: 0,
+                qualityFocus: 0,
+                consistency: 0
+            },
+            lifetimeStats: {
+                totalDays: 0,
+                totalPlaythroughs: 1,
+                highestPrestige: 0,
+                highestEvolutionStage: 0,
+                highestEvolutionStageName: "DORMANT",
+                bestStats: {
+                    power: 0,
+                    stability: 0,
+                    adaptation: 0,
+                    resonance: 0,
+                    mitochondriaPower: 0
+                },
+                sleepQuality: {
+                    best: 0,
+                    average: 0,
+                    totalEntries: 0,
+                    perfectStreaks: 0
+                }
+            },
+            achievements: {
+                // Basic achievements
+                firstSleep: false,
+                tenDays: false,
+                fiftyDays: false,
+                hundredDays: false,
+                
+                // Evolution achievements
+                reachAwakened: false,
+                reachSymbiotic: false,
+                reachAdaptive: false,
+                reachResonant: false,
+                reachTranscendent: false,
+                reachEthereal: false,
+                reachCosmic: false,
+                reachOmniscient: false,
+                reachGodlike: false,
+                
+                // Prestige achievements
+                firstPrestige: false,
+                prestige5: false,
+                prestige10: false,
+                
+                // Sleep quality achievements
+                perfectSleep: false,
+                perfectSleepStreak3: false,
+                perfectSleepStreak7: false,
+                
+                // Pattern achievements
+                discoverNeuralAmplifier: false,
+                discoverCellularFortress: false,
+                discoverHarmonicSymbiote: false,
+                discoverAberrantMutation: false,
+                discoverCerebralColonizer: false,
+                discoverPhantomParasite: false,
+                discoverPerfectSpecimen: false,
+                
+                // Special achievements
+                allStats100: false,
+                reachGodstageTwice: false
+            },
+            currentStreak: {
+                perfectSleep: 0
+            }
+        };
+        
+        // Evolution stages
+        const evolutionStages = [
+            "DORMANT",
+            "AWAKENED",
+            "SYMBIOTIC",
+            "ADAPTIVE",
+            "RESONANT",
+            "TRANSCENDENT",
+            "ETHEREAL",
+            "COSMIC",
+            "OMNISCIENT",
+            "GODLIKE"
+        ];
+        
+        // Evolution patterns
+        const evolutionPatterns = {
+            "STANDARD": {
+                name: "Standard",
+                description: "Balanced mitochondrial development"
+            },
+            "NEURAL_AMPLIFIER": {
+                name: "Neural Amplifier",
+                description: "Enhanced cognitive function and dream manipulation"
+            },
+            "CELLULAR_FORTRESS": {
+                name: "Cellular Fortress",
+                description: "Reinforced cellular structure and regeneration"
+            },
+            "HARMONIC_SYMBIOTE": {
+                name: "Harmonic Symbiote",
+                description: "Deep connection with host biology"
+            },
+            "ABERRANT_MUTATION": {
+                name: "Aberrant Mutation",
+                description: "Unpredictable and chaotic development"
+            },
+            "CEREBRAL_COLONIZER": {
+                name: "Cerebral Colonizer",
+                description: "Advanced neural and physical enhancement"
+            },
+            "PHANTOM_PARASITE": {
+                name: "Phantom Parasite",
+                description: "Subtle influence over host consciousness"
+            },
+            "PERFECT_SPECIMEN": {
+                name: "Perfect Specimen",
+                description: "Flawless symmetry and balanced systems"
+            }
+        };
+        
+        // Achievement definitions
+        const achievementDefinitions = {
+            firstSleep: { 
+                title: "First Contact", 
+                description: "Submit your first sleep data" 
+            },
+            tenDays: { 
+                title: "Embryonic Phase", 
+                description: "Survive for 10 days" 
+            },
+            fiftyDays: { 
+                title: "Maturation", 
+                description: "Survive for 50 days" 
+            },
+            hundredDays: { 
+                title: "Seasoned Host", 
+                description: "Survive for 100 days" 
+            },
+            reachAwakened: { 
+                title: "Awakening", 
+                description: "Reach the AWAKENED stage" 
+            },
+            reachSymbiotic: { 
+                title: "Symbiosis", 
+                description: "Reach the SYMBIOTIC stage" 
+            },
+            reachAdaptive: { 
+                title: "Adaptation", 
+                description: "Reach the ADAPTIVE stage" 
+            },
+            reachResonant: { 
+                title: "Resonance", 
+                description: "Reach the RESONANT stage" 
+            },
+            reachTranscendent: { 
+                title: "Transcendence", 
+                description: "Reach the TRANSCENDENT stage" 
+            },
+            reachEthereal: { 
+                title: "Ethereal Form", 
+                description: "Reach the ETHEREAL stage" 
+            },
+            reachCosmic: { 
+                title: "Cosmic Awareness", 
+                description: "Reach the COSMIC stage" 
+            },
+            reachOmniscient: { 
+                title: "Omniscience", 
+                description: "Reach the OMNISCIENT stage" 
+            },
+            reachGodlike: { 
+                title: "Apotheosis", 
+                description: "Reach the GODLIKE stage" 
+            },
+            firstPrestige: { 
+                title: "Rebirth", 
+                description: "Complete your first prestige cycle" 
+            },
+            prestige5: { 
+                title: "Cycle Master", 
+                description: "Reach prestige level 5" 
+            },
+            prestige10: { 
+                title: "Eternal Recurrence", 
+                description: "Reach prestige level 10" 
+            },
+            perfectSleep: { 
+                title: "Perfect Host", 
+                description: "Achieve 100% sleep quality" 
+            },
+            perfectSleepStreak3: { 
+                title: "Harmony", 
+                description: "Achieve 3 consecutive days of perfect sleep" 
+            },
+            perfectSleepStreak7: { 
+                title: "Mastery", 
+                description: "Achieve 7 consecutive days of perfect sleep" 
+            },
+            discoverNeuralAmplifier: { 
+                title: "Neurological Integration", 
+                description: "Develop the Neural Amplifier pattern" 
+            },
+            discoverCellularFortress: { 
+                title: "Fortification", 
+                description: "Develop the Cellular Fortress pattern" 
+            },
+            discoverHarmonicSymbiote: { 
+                title: "Biological Harmony", 
+                description: "Develop the Harmonic Symbiote pattern" 
+            },
+            discoverAberrantMutation: { 
+                title: "Anomalous Evolution", 
+                description: "Develop the Aberrant Mutation pattern" 
+            },
+            discoverCerebralColonizer: { 
+                title: "Mind and Matter", 
+                description: "Develop the Cerebral Colonizer pattern" 
+            },
+            discoverPhantomParasite: { 
+                title: "Ethereal Influence", 
+                description: "Develop the Phantom Parasite pattern" 
+            },
+            discoverPerfectSpecimen: { 
+                title: "Perfection", 
+                description: "Develop the Perfect Specimen pattern" 
+            },
+            allStats100: { 
+                title: "Paragon", 
+                description: "Reach 100 in all stats simultaneously" 
+            },
+            reachGodstageTwice: { 
+                title: "Divinity", 
+                description: "Reach GODLIKE stage twice" 
+            }
+        };
+        
+        // Load existing data if available
+        try {
+            const storedState = localStorage.getItem('parasiteState');
+            if (storedState) {
+                gameState = JSON.parse(storedState);
+                
+                // Handle compatibility with older versions that don't have prestige system
+                if (!gameState.prestigeLevel) {
+                    gameState.prestigeLevel = 0;
+                }
+                
+                // Initialize sleep patterns if not exist
+                if (!gameState.sleepPatterns) {
+                    gameState.sleepPatterns = {
+                        remFocus: 0,
+                        deepFocus: 0,
+                        lightFocus: 0,
+                        totalSleepFocus: 0,
+                        qualityFocus: 0,
+                        consistency: 0
+                    };
+                }
+                
+                // Initialize prestige affinities if prestigeLevel > 0 but no affinities exist
+                if (gameState.prestigeLevel > 0 && !gameState.prestigeAffinities) {
+                    gameState.prestigeAffinities = {
+                        power: 0.05,
+                        stability: 0.05,
+                        adaptation: 0.05,
+                        resonance: 0.05
+                    };
+                }
+                
+                if (!gameState.lifetimeStats) {
+                    gameState.lifetimeStats = {
+                        totalDays: gameState.day,
+                        totalPlaythroughs: 1,
+                        highestPrestige: 0,
+                        highestEvolutionStage: gameState.evolutionStage,
+                        highestEvolutionStageName: evolutionStages[gameState.evolutionStage],
+                        bestStats: {
+                            power: gameState.powerStat,
+                            stability: gameState.stabilityStat,
+                            adaptation: gameState.adaptationStat,
+                            resonance: gameState.resonanceStat,
+                            mitochondriaPower: gameState.mitochondriaPower
+                        },
+                        sleepQuality: {
+                            best: 0,
+                            average: 0,
+                            totalEntries: 0,
+                            perfectStreaks: 0
+                        }
+                    };
+                }
+                
+                if (!gameState.achievements) {
+                    gameState.achievements = {
+                        firstSleep: gameState.sleepLog.length > 0,
+                        tenDays: gameState.day > 10,
+                        fiftyDays: gameState.day > 50,
+                        hundredDays: gameState.day > 100,
+                        reachAwakened: gameState.evolutionStage >= 1,
+                        reachSymbiotic: gameState.evolutionStage >= 2,
+                        reachAdaptive: gameState.evolutionStage >= 3,
+                        reachResonant: gameState.evolutionStage >= 4,
+                        reachTranscendent: gameState.evolutionStage >= 5,
+                        reachEthereal: gameState.evolutionStage >= 6,
+                        reachCosmic: gameState.evolutionStage >= 7,
+                        reachOmniscient: gameState.evolutionStage >= 8,
+                        reachGodlike: gameState.evolutionStage >= 9,
+                        firstPrestige: false,
+                        prestige5: false,
+                        prestige10: false,
+                        perfectSleep: false,
+                        perfectSleepStreak3: false,
+                        perfectSleepStreak7: false,
+                        discoverNeuralAmplifier: gameState.evolutionPattern === "NEURAL_AMPLIFIER",
+                        discoverCellularFortress: gameState.evolutionPattern === "CELLULAR_FORTRESS",
+                        discoverHarmonicSymbiote: gameState.evolutionPattern === "HARMONIC_SYMBIOTE",
+                        discoverAberrantMutation: gameState.evolutionPattern === "ABERRANT_MUTATION",
+                        discoverCerebralColonizer: gameState.evolutionPattern === "CEREBRAL_COLONIZER",
+                        discoverPhantomParasite: gameState.evolutionPattern === "PHANTOM_PARASITE",
+                        discoverPerfectSpecimen: gameState.evolutionPattern === "PERFECT_SPECIMEN",
+                        allStats100: 
+                            gameState.powerStat === 100 && 
+                            gameState.stabilityStat === 100 && 
+                            gameState.adaptationStat === 100 && 
+                            gameState.resonanceStat === 100,
+                        reachGodstageTwice: false
+                    };
+                }
+                
+                if (!gameState.currentStreak) {
+                    gameState.currentStreak = {
+                        perfectSleep: 0
+                    };
+                }
+                
+                updateUI();
+                updateCharts();
+                updateAffinityUI();
+                updateRecordsUI();
+                updateAchievementsUI();
+                checkPrestigeAvailability();
+            }
+        } catch (e) {
+            console.log('No saved state found or error loading state: ' + e.message);
+        }
+        
+        // Auto-save every 60 seconds
+        setInterval(function() {
+            saveGameState();
+        }, 60000);
+        
+        // Sleep form submission
+        document.getElementById('sleep-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get input values
+            const awakeTime = parseInt(document.getElementById('awake-time').value) || 0;
+            const remTime = parseInt(document.getElementById('rem-time').value) || 0;
+            const lightTime = parseInt(document.getElementById('light-time').value) || 0;
+            const deepTime = parseInt(document.getElementById('deep-time').value) || 0;
+            
+            // Process sleep data
+            processSleepData(awakeTime, remTime, lightTime, deepTime);
+            
+            // Reset form
+            this.reset();
+            
+            // Save game state
+            saveGameState();
+        });
+        
+        function processSleepData(awakeTime, remTime, lightTime, deepTime) {
+            // Calculate total sleep time
+            const totalSleepTime = remTime + lightTime + deepTime;
+            
+            // Calculate quality scores
+            const remQuality = Math.min(remTime / 90, 1.5); // Ideal REM is about 90 minutes
+            const deepQuality = Math.min(deepTime / 120, 1.5); // Ideal deep sleep is about 120 minutes
+            const lightQuality = Math.min(lightTime / 240, 1.2); // Ideal light sleep is about 240 minutes
+            const awakeRatio = Math.max(0, 1 - (awakeTime / 60)); // Penalize if awake time > 60 minutes
+            
+            // Calculate overall sleep quality (0-100)
+            const sleepQuality = Math.min(100, Math.floor(
+                (remQuality * 35) + (deepQuality * 40) + (lightQuality * 15) + (awakeRatio * 10)
+            ));
+            
+            // Store stats before updating for history
+            const previousStats = {
+                power: gameState.powerStat,
+                stability: gameState.stabilityStat,
+                adaptation: gameState.adaptationStat,
+                resonance: gameState.resonanceStat
+            };
+            
+            // Update sleep pattern tracking
+            updateSleepPatterns(remTime, deepTime, lightTime, totalSleepTime, sleepQuality);
+            
+            // Calculate prestige multipliers for stat gains - now with affinities
+            const baseMultiplier = 1 + (gameState.prestigeLevel * 0.05); // Reduced from 0.1 to 0.05 (5% per level)
+            
+            // Apply affinities if they exist
+            let powerMultiplier = baseMultiplier;
+            let stabilityMultiplier = baseMultiplier;
+            let adaptationMultiplier = baseMultiplier;
+            let resonanceMultiplier = baseMultiplier;
+            
+            if (gameState.prestigeAffinities) {
+                powerMultiplier += gameState.prestigeAffinities.power || 0;
+                stabilityMultiplier += gameState.prestigeAffinities.stability || 0;
+                adaptationMultiplier += gameState.prestigeAffinities.adaptation || 0;
+                resonanceMultiplier += gameState.prestigeAffinities.resonance || 0;
+            }
+            
+            // Update stats based on sleep quality with affinity-based bonuses
+            gameState.powerStat += Math.floor((sleepQuality / 20) * powerMultiplier);
+            gameState.stabilityStat += Math.floor(((deepQuality * 25) + (lightQuality * 5)) * stabilityMultiplier);
+            gameState.adaptationStat += Math.floor(((remQuality * 30) + (awakeRatio * 5)) * adaptationMultiplier);
+            gameState.resonanceStat += Math.floor((totalSleepTime / 45) * resonanceMultiplier); // ~1 point per 45 minutes of sleep
+            
+            // Cap stats at 100
+            gameState.powerStat = Math.min(100, gameState.powerStat);
+            gameState.stabilityStat = Math.min(100, gameState.stabilityStat);
+            gameState.adaptationStat = Math.min(100, gameState.adaptationStat);
+            gameState.resonanceStat = Math.min(100, gameState.resonanceStat);
+            
+            // Calculate mitochondria power (average of all stats)
+            gameState.mitochondriaPower = Math.floor(
+                (gameState.powerStat + gameState.stabilityStat + 
+                 gameState.adaptationStat + gameState.resonanceStat) / 4
+            );
+            
+            // Update lifetime stats
+            gameState.lifetimeStats.totalDays++;
+            
+            // Update sleep quality records
+            if (sleepQuality > gameState.lifetimeStats.sleepQuality.best) {
+                gameState.lifetimeStats.sleepQuality.best = sleepQuality;
+            }
+            
+            gameState.lifetimeStats.sleepQuality.totalEntries++;
+            const totalQuality = (gameState.lifetimeStats.sleepQuality.average * 
+                                 (gameState.lifetimeStats.sleepQuality.totalEntries - 1)) + sleepQuality;
+            gameState.lifetimeStats.sleepQuality.average = Math.round(
+                totalQuality / gameState.lifetimeStats.sleepQuality.totalEntries
+            );
+            
+            // Update best stats ever achieved
+            if (gameState.powerStat > gameState.lifetimeStats.bestStats.power) {
+                gameState.lifetimeStats.bestStats.power = gameState.powerStat;
+            }
+            if (gameState.stabilityStat > gameState.lifetimeStats.bestStats.stability) {
+                gameState.lifetimeStats.bestStats.stability = gameState.stabilityStat;
+            }
+            if (gameState.adaptationStat > gameState.lifetimeStats.bestStats.adaptation) {
+                gameState.lifetimeStats.bestStats.adaptation = gameState.adaptationStat;
+            }
+            if (gameState.resonanceStat > gameState.lifetimeStats.bestStats.resonance) {
+                gameState.lifetimeStats.bestStats.resonance = gameState.resonanceStat;
+            }
+            if (gameState.mitochondriaPower > gameState.lifetimeStats.bestStats.mitochondriaPower) {
+                gameState.lifetimeStats.bestStats.mitochondriaPower = gameState.mitochondriaPower;
+            }
+            
+            // Track perfect sleep streaks
+            if (sleepQuality >= 95) {
+                gameState.currentStreak.perfectSleep++;
+                if (gameState.currentStreak.perfectSleep > gameState.lifetimeStats.sleepQuality.perfectStreaks) {
+                    gameState.lifetimeStats.sleepQuality.perfectStreaks = gameState.currentStreak.perfectSleep;
+                }
+            } else {
+                gameState.currentStreak.perfectSleep = 0;
+            }
+            
+            // Detect evolution pattern
+            gameState.evolutionPattern = detectEvolutionPattern();
+            
+            // Check for evolution stage (adjusted for longer progression)
+            updateEvolutionStage();
+            
+            // Check for achievements
+            checkAchievements(sleepQuality);
+            
+            // Add entry to sleep log
+            const timestamp = new Date().toLocaleString();
+            gameState.sleepLog.unshift({
+                day: gameState.day,
+                timestamp: timestamp,
+                awake: awakeTime,
+                rem: remTime,
+                light: lightTime,
+                deep: deepTime,
+                quality: sleepQuality
+            });
+            
+            // Keep only the last 10 entries in display log
+            if (gameState.sleepLog.length > 10) {
+                gameState.sleepLog = gameState.sleepLog.slice(0, 10);
+            }
+            
+            // Add entry to history for charts
+            gameState.history.sleepQuality.push({
+                day: gameState.day,
+                quality: sleepQuality
+            });
+            
+            gameState.history.stats.push({
+                day: gameState.day,
+                power: gameState.powerStat,
+                stability: gameState.stabilityStat,
+                adaptation: gameState.adaptationStat,
+                resonance: gameState.resonanceStat
+            });
+            
+            // Keep history at a reasonable size (last 30 days)
+            if (gameState.history.sleepQuality.length > 30) {
+                gameState.history.sleepQuality.shift();
+            }
+            
+            if (gameState.history.stats.length > 30) {
+                gameState.history.stats.shift();
+            }
+            
+            // Increment day
+            gameState.day += 1;
+            
+            // Check if prestige is available
+            checkPrestigeAvailability();
+            
+            // Update UI
+            updateUI();
+            
+            // Update charts
+            updateCharts();
+            
+            // Update affinities UI if prestigious enough
+            if (gameState.prestigeLevel > 0) {
+                updateAffinityUI();
+            }
+            
+            // Update records UI
+            updateRecordsUI();
+            
+            // Update achievements UI
+            updateAchievementsUI();
+            
+            // Generate a status message
+            generateStatusMessage(sleepQuality);
+        }
+        
+        // Track sleep patterns to determine prestige affinities
+        function updateSleepPatterns(remTime, deepTime, lightTime, totalSleepTime, sleepQuality) {
+            // Initialize sleep patterns if not exist
+            if (!gameState.sleepPatterns) {
+                gameState.sleepPatterns = {
+                    remFocus: 0,
+                    deepFocus: 0,
+                    lightFocus: 0,
+                    totalSleepFocus: 0,
+                    qualityFocus: 0,
+                    consistency: 0
+                };
+            }
+            
+            // Calculate ideal ratios
+            const idealRemRatio = 90 / 480; // Ideal 90 min REM in 8 hour sleep
+            const idealDeepRatio = 120 / 480; // Ideal 120 min deep in 8 hour sleep
+            const idealLightRatio = 270 / 480; // Ideal 270 min light in 8 hour sleep
+            
+            // Calculate actual ratios
+            const actualRemRatio = remTime / totalSleepTime;
+            const actualDeepRatio = deepTime / totalSleepTime;
+            const actualLightRatio = lightTime / totalSleepTime;
+            
+            // Compare to ideal and update focus patterns
+            // Values above 1 mean exceeded ideal, below 1 means less than ideal
+            const remFocusValue = actualRemRatio / idealRemRatio;
+            const deepFocusValue = actualDeepRatio / idealDeepRatio;
+            const lightFocusValue = actualLightRatio / idealLightRatio;
+            
+            // Update using weighted average (80% previous value, 20% new value)
+            // This creates a gradual shift in patterns over time
+            gameState.sleepPatterns.remFocus = (gameState.sleepPatterns.remFocus * 0.8) + (remFocusValue * 0.2);
+            gameState.sleepPatterns.deepFocus = (gameState.sleepPatterns.deepFocus * 0.8) + (deepFocusValue * 0.2);
+            gameState.sleepPatterns.lightFocus = (gameState.sleepPatterns.lightFocus * 0.8) + (lightFocusValue * 0.2);
+            
+            // Track overall sleep duration focus (>8 hours is high)
+            const durationFocus = totalSleepTime / 480; // 480 min = 8 hours
+            gameState.sleepPatterns.totalSleepFocus = (gameState.sleepPatterns.totalSleepFocus * 0.8) + (durationFocus * 0.2);
+            
+            // Track quality focus (consistency in getting high quality sleep)
+            const qualityFocus = sleepQuality / 85; // 85% as benchmark
+            gameState.sleepPatterns.qualityFocus = (gameState.sleepPatterns.qualityFocus * 0.8) + (qualityFocus * 0.2);
+            
+            // Check sleep history for consistency if enough entries exist
+            if (gameState.sleepLog.length >= 3) {
+                // Calculate standard deviation of recent quality scores
+                const recentQualities = gameState.sleepLog.slice(0, 3).map(entry => entry.quality);
+                const avgQuality = recentQualities.reduce((sum, val) => sum + val, 0) / recentQualities.length;
+                const variance = recentQualities.reduce((sum, val) => sum + Math.pow(val - avgQuality, 2), 0) / recentQualities.length;
+                const stdDev = Math.sqrt(variance);
+                
+                // Lower stdDev means more consistent sleep
+                // Map to 0-2 range where 0 is very inconsistent, 2 is very consistent
+                const consistencyValue = Math.max(0, 2 - (stdDev / 10));
+                gameState.sleepPatterns.consistency = (gameState.sleepPatterns.consistency * 0.8) + (consistencyValue * 0.2);
+            }
+        }
+        
+        // Generate prestige affinities based on sleep patterns
+        function generatePrestigeAffinities() {
+            // If no patterns recorded, give balanced affinities
+            if (!gameState.sleepPatterns) {
+                return {
+                    power: 0.05,
+                    stability: 0.05,
+                    adaptation: 0.05,
+                    resonance: 0.05
+                };
+            }
+            
+            // Start with base affinity values
+            const baseAffinity = 0.03; // Lower base value
+            let affinities = {
+                power: baseAffinity,
+                stability: baseAffinity,
+                adaptation: baseAffinity,
+                resonance: baseAffinity
+            };
+            
+            // Calculate total bonus to distribute (increases with prestige level)
+            const bonusPool = 0.08 + (Math.min(10, gameState.prestigeLevel) * 0.01);
+            
+            // Calculate weights based on sleep patterns
+            const weights = {
+                power: gameState.sleepPatterns.qualityFocus * 2,
+                stability: (gameState.sleepPatterns.deepFocus + gameState.sleepPatterns.lightFocus) / 2,
+                adaptation: gameState.sleepPatterns.remFocus * 1.5,
+                resonance: gameState.sleepPatterns.totalSleepFocus
+            };
+            
+            // Add consistency bonus (more consistent sleep = more total bonus)
+            const consistencyMultiplier = 1 + (gameState.sleepPatterns.consistency * 0.2);
+            
+            // Normalize weights
+            const totalWeight = Object.values(weights).reduce((sum, val) => sum + val, 0);
+            
+            // Distribute bonus based on weights
+            if (totalWeight > 0) {
+                for (const stat in weights) {
+                    const portion = (weights[stat] / totalWeight) * bonusPool * consistencyMultiplier;
+                    affinities[stat] += Math.round(portion * 100) / 100; // Round to 2 decimal places
+                }
+            }
+            
+            // Add small random variation (-0.02 to +0.02)
+            for (const stat in affinities) {
+                const variation = (Math.random() * 0.04) - 0.02;
+                affinities[stat] = Math.max(0.01, Math.round((affinities[stat] + variation) * 100) / 100);
+            }
+            
+            return affinities;
+        }
+        
+        // Update UI to show affinities
+        function updateAffinityUI() {
+            if (!gameState.prestigeAffinities) return;
+            
+            // Update the stat affinities section
+            const affinitiesContainer = document.getElementById('prestige-affinities');
+            if (affinitiesContainer) {
+                affinitiesContainer.classList.remove('hidden');
+            }
+            
+            // Update individual stat affinity displays
+            updateStatAffinityDisplay('power');
+            updateStatAffinityDisplay('stability');
+            updateStatAffinityDisplay('adaptation');
+            updateStatAffinityDisplay('resonance');
+            
+            // Update main stat display with affinity indicators
+            updateStatAffinityIndicator('power');
+            updateStatAffinityIndicator('stability');
+            updateStatAffinityIndicator('adaptation');
+            updateStatAffinityIndicator('resonance');
+        }
+        
+        function updateStatAffinityDisplay(stat) {
+            const indicator = document.getElementById(`${stat}-affinity-indicator`);
+            const valueDisplay = document.getElementById(`${stat}-affinity-value`);
+            
+            if (!indicator || !valueDisplay || !gameState.prestigeAffinities) return;
+            
+            const affinity = gameState.prestigeAffinities[stat] || 0;
+            valueDisplay.textContent = `+${Math.round(affinity * 100)}%`;
+            
+            // Set indicator color based on affinity strength
+            if (affinity >= 0.08) {
+                indicator.className = 'affinity-indicator affinity-strong';
+            } else if (affinity >= 0.05) {
+                indicator.className = 'affinity-indicator affinity-medium';
+            } else if (affinity >= 0.03) {
+                indicator.className = 'affinity-indicator affinity-neutral';
+            } else {
+                indicator.className = 'affinity-indicator affinity-weak';
+            }
+        }
+        
+        function updateStatAffinityIndicator(stat) {
+            const affinityIndicator = document.getElementById(`${stat}-affinity`);
+            
+            if (!affinityIndicator || !gameState.prestigeAffinities) return;
+            
+            const affinity = gameState.prestigeAffinities[stat] || 0;
+            
+            // Only show indicators for non-zero affinities
+            if (affinity > 0) {
+                affinityIndicator.classList.remove('hidden');
+                
+                // Set indicator color based on affinity strength
+                let iconClass;
+                if (affinity >= 0.08) {
+                    iconClass = 'affinity-strong';
+                } else if (affinity >= 0.05) {
+                    iconClass = 'affinity-medium';
+                } else {
+                    iconClass = 'affinity-neutral';
+                }
+                
+                affinityIndicator.innerHTML = `<span class="affinity-indicator ${iconClass}"></span> <span class="text-xs">+${Math.round(affinity * 100)}%</span>`;
+            } else {
+                affinityIndicator.classList.add('hidden');
+            }
+        }
+        
+        function updateEvolutionStage() {
+            const avgStat = gameState.mitochondriaPower;
+            let newStage = gameState.evolutionStage;
+            
+            // Adjusted thresholds for longer progression
+            // Higher prestige levels make it easier to reach advanced stages
+            const prestigeBonus = Math.min(10, gameState.prestigeLevel * 2); // Max 10% bonus
+            
+            if (avgStat >= (98 - prestigeBonus) && gameState.evolutionStage < 9) {
+                newStage = 9; // GODLIKE
+            } else if (avgStat >= (95 - prestigeBonus) && gameState.evolutionStage < 8) {
+                newStage = 8; // OMNISCIENT
+            } else if (avgStat >= (90 - prestigeBonus) && gameState.evolutionStage < 7) {
+                newStage = 7; // COSMIC
+            } else if (avgStat >= (85 - prestigeBonus) && gameState.evolutionStage < 6) {
+                newStage = 6; // ETHEREAL
+            } else if (avgStat >= (78 - prestigeBonus) && gameState.evolutionStage < 5) {
+                newStage = 5; // TRANSCENDENT
+            } else if (avgStat >= (65 - prestigeBonus) && gameState.evolutionStage < 4) {
+                newStage = 4; // RESONANT
+            } else if (avgStat >= (50 - prestigeBonus) && gameState.evolutionStage < 3) {
+                newStage = 3; // ADAPTIVE
+            } else if (avgStat >= (35 - prestigeBonus) && gameState.evolutionStage < 2) {
+                newStage = 2; // SYMBIOTIC
+            } else if (avgStat >= (20 - prestigeBonus) && gameState.evolutionStage < 1) {
+                newStage = 1; // AWAKENED
+            }
+            
+            // If evolution stage changed, update records
+            if (newStage > gameState.evolutionStage) {
+                gameState.evolutionStage = newStage;
+                
+                // Update highest evolution stage record
+                if (newStage > gameState.lifetimeStats.highestEvolutionStage) {
+                    gameState.lifetimeStats.highestEvolutionStage = newStage;
+                    gameState.lifetimeStats.highestEvolutionStageName = evolutionStages[newStage];
+                }
+            }
+        }
+        
+        function checkAchievements(sleepQuality) {
+            // First sleep data submission
+            if (!gameState.achievements.firstSleep && gameState.sleepLog.length > 0) {
+                gameState.achievements.firstSleep = true;
+            }
+            
+            // Day-based achievements
+            if (!gameState.achievements.tenDays && gameState.day >= 10) {
+                gameState.achievements.tenDays = true;
+            }
+            if (!gameState.achievements.fiftyDays && gameState.day >= 50) {
+                gameState.achievements.fiftyDays = true;
+            }
+            if (!gameState.achievements.hundredDays && gameState.day >= 100) {
+                gameState.achievements.hundredDays = true;
+            }
+            
+            // Evolution stage achievements
+            const stageAchievements = [
+                { stage: 1, key: 'reachAwakened' },
+                { stage: 2, key: 'reachSymbiotic' },
+                { stage: 3, key: 'reachAdaptive' },
+                { stage: 4, key: 'reachResonant' },
+                { stage: 5, key: 'reachTranscendent' },
+                { stage: 6, key: 'reachEthereal' },
+                { stage: 7, key: 'reachCosmic' },
+                { stage: 8, key: 'reachOmniscient' },
+                { stage: 9, key: 'reachGodlike' }
+            ];
+            
+            stageAchievements.forEach(({ stage, key }) => {
+                if (!gameState.achievements[key] && gameState.evolutionStage >= stage) {
+                    gameState.achievements[key] = true;
+                }
+            });
+            
+            // Sleep quality achievements
+            if (!gameState.achievements.perfectSleep && sleepQuality >= 95) {
+                gameState.achievements.perfectSleep = true;
+            }
+            
+            if (!gameState.achievements.perfectSleepStreak3 && gameState.currentStreak.perfectSleep >= 3) {
+                gameState.achievements.perfectSleepStreak3 = true;
+            }
+            
+            if (!gameState.achievements.perfectSleepStreak7 && gameState.currentStreak.perfectSleep >= 7) {
+                gameState.achievements.perfectSleepStreak7 = true;
+            }
+            
+            // Pattern discovery achievements
+            const patternAchievements = {
+                "NEURAL_AMPLIFIER": "discoverNeuralAmplifier",
+                "CELLULAR_FORTRESS": "discoverCellularFortress",
+                "HARMONIC_SYMBIOTE": "discoverHarmonicSymbiote",
+                "ABERRANT_MUTATION": "discoverAberrantMutation",
+                "CEREBRAL_COLONIZER": "discoverCerebralColonizer",
+                "PHANTOM_PARASITE": "discoverPhantomParasite",
+                "PERFECT_SPECIMEN": "discoverPerfectSpecimen"
+            };
+            
+            if (patternAchievements[gameState.evolutionPattern]) {
+                gameState.achievements[patternAchievements[gameState.evolutionPattern]] = true;
+            }
+            
+            // Special achievements
+            if (!gameState.achievements.allStats100 && 
+                gameState.powerStat === 100 && 
+                gameState.stabilityStat === 100 && 
+                gameState.adaptationStat === 100 && 
+                gameState.resonanceStat === 100) {
+                gameState.achievements.allStats100 = true;
+            }
+        }
+        
+        function detectEvolutionPattern() {
+            // Get the stats for easier reference
+            const power = gameState.powerStat;
+            const stability = gameState.stabilityStat;
+            const adaptation = gameState.adaptationStat;
+            const resonance = gameState.resonanceStat;
+            
+            // Calculate average and standard deviation to detect imbalances
+            const avg = (power + stability + adaptation + resonance) / 4;
+            const variance = Math.pow(power - avg, 2) + Math.pow(stability - avg, 2) + 
+                          Math.pow(adaptation - avg, 2) + Math.pow(resonance - avg, 2);
+            const stdDev = Math.sqrt(variance / 4);
+            
+            // If all stats are high (near perfect specimen)
+            if (power >= 85 && stability >= 85 && adaptation >= 85 && resonance >= 85) {
+                return "PERFECT_SPECIMEN";
+            }
+            
+            // Neural Amplifier: High adaptation, moderate power, lower stability
+            if (adaptation >= 70 && adaptation > stability * 1.4 && adaptation > power * 1.2) {
+                return "NEURAL_AMPLIFIER";
+            }
+            
+            // Cellular Fortress: High stability, lower adaptation
+            if (stability >= 70 && stability > adaptation * 1.4) {
+                return "CELLULAR_FORTRESS";
+            }
+            
+            // Harmonic Symbiote: High resonance
+            if (resonance >= 75 && resonance > adaptation * 1.2 && resonance > stability * 1.2) {
+                return "HARMONIC_SYMBIOTE";
+            }
+            
+            // Aberrant Mutation: Highly variable stats (high standard deviation)
+            if (stdDev > 25 && adaptation > 50) {
+                return "ABERRANT_MUTATION";
+            }
+            
+            // Cerebral Colonizer: High adaptation AND high stability
+            if (adaptation >= 65 && stability >= 65 && adaptation > resonance * 1.3) {
+                return "CEREBRAL_COLONIZER";
+            }
+            
+            // Phantom Parasite: High light sleep focus (high resonance, moderate stability and adaptation)
+            if (resonance >= 60 && stability >= 40 && adaptation >= 40 && power < 50) {
+                return "PHANTOM_PARASITE";
+            }
+            
+            // Default pattern if no specialization is detected
+            return "STANDARD";
+        }
+            
+        function updateUI() {
+            // Update stats
+            document.getElementById('power-stat').textContent = gameState.powerStat;
+            document.getElementById('stability-stat').textContent = gameState.stabilityStat;
+            document.getElementById('adaptation-stat').textContent = gameState.adaptationStat;
+            document.getElementById('resonance-stat').textContent = gameState.resonanceStat;
+            
+            // Update day counter
+            document.getElementById('days-active').textContent = `Day: ${gameState.day}`;
+            
+            // Update evolution stage
+            const evolutionText = evolutionStages[gameState.evolutionStage];
+            document.getElementById('evolution-stage').textContent = evolutionText;
+            
+            // Update evolution pattern
+            const pattern = gameState.evolutionPattern;
+            const patternInfo = evolutionPatterns[pattern] || evolutionPatterns.STANDARD;
+            document.getElementById('evolution-pattern').textContent = patternInfo.name + " Type";
+            document.getElementById('evolution-pattern').className = getPatternTextClass(pattern);
+            
+            // Update mitochondria power meter
+            const powerMeter = document.getElementById('mitochondria-power');
+            powerMeter.style.width = `${gameState.mitochondriaPower}%`;
+            powerMeter.style.background = getPatternColor(pattern);
+            
+            // Update organism appearance based on evolution stage and pattern
+            updateParasiteAppearance(gameState.evolutionStage, pattern);
+            
+            // Update prestige indicator
+            const prestigeIndicator = document.getElementById('prestige-indicator');
+            if (gameState.prestigeLevel > 0) {
+                prestigeIndicator.classList.remove('hidden');
+                document.getElementById('prestige-level').textContent = `Prestige Level: ${gameState.prestigeLevel}`;
+            } else {
+                prestigeIndicator.classList.add('hidden');
+            }
+            
+            // Update log
+            const logContainer = document.getElementById('sleep-log');
+            if (gameState.sleepLog.length > 0) {
+                logContainer.innerHTML = '';
+                gameState.sleepLog.forEach(entry => {
+                    const logEntry = document.createElement('p');
+                    const qualityClass = entry.quality >= 80 ? 'text-green-500' : entry.quality >= 60 ? 'text-yellow-500' : 'text-parasite-red';
+                    logEntry.className = 'border-b border-parasite-gray pb-1';
+                    logEntry.innerHTML = `<span class="text-gray-400">Day ${entry.day}:</span> Awake: ${entry.awake}m, REM: ${entry.rem}m, Light: ${entry.light}m, Deep: ${entry.deep}m - <span class="${qualityClass}">Quality: ${entry.quality}%</span>`;
+                    logContainer.appendChild(logEntry);
+                });
+            }
+        }
+        
+        function getPatternTextClass(pattern) {
+            switch(pattern) {
+                case "NEURAL_AMPLIFIER": return "text-blue-400 font-medium text-sm mb-1";
+                case "CELLULAR_FORTRESS": return "text-green-400 font-medium text-sm mb-1";
+                case "HARMONIC_SYMBIOTE": return "text-purple-400 font-medium text-sm mb-1";
+                case "ABERRANT_MUTATION": return "text-yellow-400 font-medium text-sm mb-1";
+                case "CEREBRAL_COLONIZER": return "text-indigo-400 font-medium text-sm mb-1";
+                case "PHANTOM_PARASITE": return "text-gray-400 font-medium text-sm mb-1";
+                case "PERFECT_SPECIMEN": return "text-amber-300 font-medium text-sm mb-1";
+                default: return "text-gray-400 text-sm mb-1";
+            }
+        }
+        
+        function getPatternColor(pattern) {
+            switch(pattern) {
+                case "NEURAL_AMPLIFIER": return "linear-gradient(90deg, #1a3a7a 0%, #3a5aaa 100%)";
+                case "CELLULAR_FORTRESS": return "linear-gradient(90deg, #0a5a0a 0%, #1a7a1a 100%)";
+                case "HARMONIC_SYMBIOTE": return "linear-gradient(90deg, #4a1a8a 0%, #6a3aaa 100%)";
+                case "ABERRANT_MUTATION": return "linear-gradient(90deg, #8a6a1a 0%, #aa8a3a 100%)";
+                case "CEREBRAL_COLONIZER": return "linear-gradient(90deg, #3a1a7a 0%, #5a3a9a 100%)";
+                case "PHANTOM_PARASITE": return "linear-gradient(90deg, #3a3a4a 0%, #5a5a6a 100%)";
+                case "PERFECT_SPECIMEN": return "linear-gradient(90deg, #8a7a1a 0%, #aa9a3a 100%)";
+                default: return "#1a3a1a";
+            }
+        }
+        
+        function updateParasiteAppearance(stage, pattern) {
+            const organism = document.getElementById('organism');
+            const parasiteVisual = document.getElementById('parasite-visual');
+            
+            // Base size and appearance on evolution stage
+            let size, shape;
+            
+            // Set base size based on stage
+            if (stage === 0) {
+                size = 'w-16 h-16';
+            } else if (stage === 1) {
+                size = 'w-20 h-20';
+            } else if (stage === 2) {
+                size = 'w-20 h-20';
+            } else if (stage === 3) {
+                size = 'w-24 h-24';
+            } else if (stage === 4) {
+                size = 'w-24 h-24';
+            } else if (stage === 5) {
+                size = 'w-26 h-26';
+            } else if (stage === 6) {
+                size = 'w-26 h-26';
+            } else if (stage === 7) {
+                size = 'w-28 h-28';
+            } else if (stage === 8) {
+                size = 'w-28 h-28';
+            } else if (stage === 9) {
+                size = 'w-30 h-30';
+            }
+            
+            // Apply pattern-specific appearance
+            switch(pattern) {
+                case "NEURAL_AMPLIFIER":
+                    // Asymmetrical, flowing shape
+                    organism.className = `${size} bg-blue-700 pulse`;
+                    if (stage >= 2) {
+                        organism.style.clipPath = 'polygon(50% 0%, 100% 38%, 75% 100%, 25% 100%, 0% 25%)';
+                        organism.style.filter = 'brightness(1.2) contrast(1.1)';
+                        organism.style.animation = 'pulse 1.5s infinite';
+                    } else {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    }
+                    break;
+                    
+                case "CELLULAR_FORTRESS":
+                    // Rigid, geometric shape
+                    organism.className = `${size} bg-green-800 pulse`;
+                    if (stage >= 2) {
+                        organism.style.clipPath = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)';
+                        organism.style.filter = 'none';
+                        organism.style.animation = 'pulse 3s infinite';
+                    } else {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    }
+                    break;
+                    
+                case "HARMONIC_SYMBIOTE":
+                    // Smooth, flowing contours
+                    organism.className = `${size} bg-purple-700 pulse`;
+                    if (stage >= 2) {
+                        organism.style.clipPath = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
+                        organism.style.filter = 'brightness(1.1)';
+                        organism.style.animation = 'pulse 2.5s infinite';
+                    } else {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    }
+                    break;
+                    
+                case "ABERRANT_MUTATION":
+                    // Chaotic, asymmetrical shape
+                    organism.className = `${size} bg-yellow-900 pulse`;
+                    if (stage >= 2) {
+                        organism.style.clipPath = 'polygon(20% 0%, 80% 10%, 100% 40%, 90% 90%, 30% 100%, 0% 70%, 10% 20%)';
+                        organism.style.filter = 'contrast(1.2)';
+                        organism.style.animation = 'pulse 1s infinite';
+                    } else {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    }
+                    break;
+                    
+                case "CEREBRAL_COLONIZER":
+                    // Balanced with both rigid and flowing elements
+                    organism.className = `${size} bg-indigo-700 pulse`;
+                    if (stage >= 2) {
+                        organism.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+                        organism.style.filter = 'brightness(1.1) contrast(1.1)';
+                        organism.style.animation = 'pulse 2s infinite';
+                    } else {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    }
+                    break;
+                    
+                case "PHANTOM_PARASITE":
+                    // Ethereal, ghost-like appearance
+                    organism.className = `${size} bg-gray-700 pulse`;
+                    if (stage >= 2) {
+                        organism.style.clipPath = 'polygon(50% 0%, 90% 25%, 100% 70%, 75% 100%, 25% 100%, 0% 70%, 10% 25%)';
+                        organism.style.filter = 'opacity(0.8) blur(1px)';
+                        organism.style.animation = 'pulse 4s infinite';
+                    } else {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    }
+                    break;
+                    
+                case "PERFECT_SPECIMEN":
+                    // Perfect symmetrical form with golden ratio
+                    organism.className = `${size} bg-amber-700 pulse`;
+                    if (stage >= 2) {
+                        organism.style.clipPath = 'polygon(50% 0%, 90% 20%, 100% 60%, 75% 100%, 25% 100%, 0% 60%, 10% 20%)';
+                        organism.style.filter = 'brightness(1.3) contrast(1.2)';
+                        organism.style.animation = 'pulse 2s infinite';
+                    } else {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    }
+                    break;
+                    
+                default:
+                    // Standard evolution with additional advanced forms
+                    organism.className = `${size} bg-parasite-red pulse`;
+                    if (stage === 0) {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    } else if (stage === 1) {
+                        organism.style.clipPath = 'none';
+                        organism.style.borderRadius = '50%';
+                    } else if (stage === 2) {
+                        organism.style.clipPath = 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)';
+                    } else if (stage === 3) {
+                        organism.style.clipPath = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)';
+                    } else if (stage === 4) {
+                        organism.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+                    } else if (stage === 5) {
+                        organism.style.clipPath = 'polygon(50% 0%, 90% 20%, 100% 60%, 75% 100%, 25% 100%, 0% 60%, 10% 20%)';
+                    } else if (stage === 6) {
+                        // ETHEREAL form
+                        organism.style.clipPath = 'polygon(50% 0%, 95% 15%, 100% 50%, 95% 85%, 50% 100%, 5% 85%, 0% 50%, 5% 15%)';
+                        organism.style.filter = 'brightness(1.3) blur(1px)';
+                    } else if (stage === 7) {
+                        // COSMIC form
+                        organism.style.clipPath = 'polygon(50% 0%, 80% 10%, 100% 35%, 100% 70%, 80% 90%, 50% 100%, 20% 90%, 0% 70%, 0% 35%, 20% 10%)';
+                        organism.style.filter = 'brightness(1.5) contrast(1.3)';
+                    } else if (stage === 8) {
+                        // OMNISCIENT form
+                        organism.style.clipPath = 'polygon(50% 0%, 75% 5%, 95% 25%, 100% 50%, 95% 75%, 75% 95%, 50% 100%, 25% 95%, 5% 75%, 0% 50%, 5% 25%, 25% 5%)';
+                        organism.style.filter = 'brightness(1.6) contrast(1.4) saturate(1.2)';
+                    } else if (stage === 9) {
+                        // GODLIKE form
+                        organism.style.clipPath = 'polygon(50% 0%, 70% 5%, 85% 15%, 95% 30%, 100% 50%, 95% 70%, 85% 85%, 70% 95%, 50% 100%, 30% 95%, 15% 85%, 5% 70%, 0% 50%, 5% 30%, 15% 15%, 30% 5%)';
+                        organism.style.filter = 'brightness(1.8) contrast(1.5) saturate(1.3)';
+                    }
+                    
+                    // Higher stages have alternative animations
+                    if (stage >= 6) {
+                        organism.style.animation = `pulse ${3 - (stage * 0.2)}s infinite`;
+                    }
+            }
+            
+            // Add border color based on pattern and stage
+            parasiteVisual.className = 'mx-auto w-32 h-32 flex items-center justify-center rounded-full';
+            
+            // Advanced stages get fancier borders
+            if (stage >= 8) { // OMNISCIENT and GODLIKE
+                parasiteVisual.style.border = '2px solid ' + getBorderColor(pattern);
+                parasiteVisual.style.boxShadow = `0 0 15px ${getBorderColor(pattern, true)}, inset 0 0 10px ${getBorderColor(pattern, true)}`;
+            } else if (stage >= 6) { // ETHEREAL and COSMIC
+                parasiteVisual.style.border = '2px solid ' + getBorderColor(pattern);
+                parasiteVisual.style.boxShadow = '0 0 15px ' + getBorderColor(pattern, true);
+            } else {
+                parasiteVisual.style.border = '1px solid ' + getBorderColor(pattern);
+                parasiteVisual.style.boxShadow = '0 0 10px ' + getBorderColor(pattern, true);
+            }
+        }
+        
+        function getBorderColor(pattern, transparent = false) {
+            const alpha = transparent ? '66' : 'ff';
+            switch(pattern) {
+                case "NEURAL_AMPLIFIER": return `#3a5aaa${alpha}`;
+                case "CELLULAR_FORTRESS": return `#1a7a1a${alpha}`;
+                case "HARMONIC_SYMBIOTE": return `#6a3aaa${alpha}`;
+                case "ABERRANT_MUTATION": return `#aa8a3a${alpha}`;
+                case "CEREBRAL_COLONIZER": return `#5a3a9a${alpha}`;
+                case "PHANTOM_PARASITE": return `#5a5a6a${alpha}`;
+                case "PERFECT_SPECIMEN": return `#aa9a3a${alpha}`;
+                default: return `#8a0303${alpha}`;
+            }
+        }
+        
+        function generateStatusMessage(sleepQuality) {
+            const statusMessage = document.getElementById('status-message');
+            const pattern = gameState.evolutionPattern;
+            
+            // Get pattern-specific messages based on quality
+            let message = getPatternSpecificMessage(pattern, sleepQuality);
+            statusMessage.textContent = message;
+        }
+        
+        function getPatternSpecificMessage(pattern, quality) {
+            // Define pattern-specific message sets
+            const messages = {
+                "STANDARD": {
+                    high: "Optimal cellular resonance detected. Mitochondria evolution accelerating.",
+                    good: "Strong cellular activity. Mitochondrial energy conversion efficient.",
+                    medium: "Moderate cellular regeneration occurring. Mitochondria stable.",
+                    low: "Suboptimal sleep patterns. Mitochondrial activity diminished.",
+                    poor: "Warning: Sleep quality insufficient for mitochondrial support."
+                },
+                "NEURAL_AMPLIFIER": {
+                    high: "Neural pathways expanding rapidly. Dream state integration at peak efficiency.",
+                    good: "Enhanced cognitive processing detected. Mitochondrial activity concentrated in brain tissue.",
+                    medium: "Moderate neural pathway development. Dream sequences becoming more vivid.",
+                    low: "Neural connection instability detected. Recommend increased REM sleep.",
+                    poor: "Insufficient neural stimulation. Parasite development limited to basic functions."
+                },
+                "CELLULAR_FORTRESS": {
+                    high: "Cellular reinforcement at maximum efficiency. Structural integrity exceptional.",
+                    good: "Enhanced cellular density achieved. Mitochondrial shell reinforcement progressing.",
+                    medium: "Moderate structural development. Cellular walls strengthening.",
+                    low: "Structural weaknesses detected. Recommend increased deep sleep.",
+                    poor: "Critical structural instability. Cellular fortress development compromised."
+                },
+                "HARMONIC_SYMBIOTE": {
+                    high: "Perfect host-parasite synchronization achieved. Biorhythms harmonized.",
+                    good: "Deep resonance with host systems established. Symbiotic bond strengthening.",
+                    medium: "Moderate symbiotic development. Biorhythm alignment progressing.",
+                    low: "Symbiotic resonance fluctuating. Recommend increased total sleep time.",
+                    poor: "Symbiotic bond weakening. Harmonic connection at risk of dissipating."
+                },
+                "ABERRANT_MUTATION": {
+                    high: "Unexpected mutation patterns detected. Evolution taking unpredictable paths.",
+                    good: "Chaotic but stable mitochondrial activity. Unusual adaptations emerging.",
+                    medium: "Irregular cellular development continuing. Pattern recognition difficult.",
+                    low: "Mutation instability increasing. Sleep pattern consistency recommended.",
+                    poor: "Aberrant development failing. Mutation process breaking down."
+                },
+                "CEREBRAL_COLONIZER": {
+                    high: "Advanced neural-physical integration achieved. Dual system enhancement optimal.",
+                    good: "Balanced enhancement of neural and muscular tissue progressing well.",
+                    medium: "Moderate dual-system development. Balance maintained but growth limited.",
+                    low: "System balance unstable. Recommend balancing REM and deep sleep cycles.",
+                    poor: "Dual-system integration failing. Development regressing to primitive state."
+                },
+                "PHANTOM_PARASITE": {
+                    high: "Subtle influence mechanisms fully established. Host consciousness partially synchronized.",
+                    good: "Ethereal presence strengthening. Subconscious integration progressing.",
+                    medium: "Moderate subtle influence developing. Light sleep conversion stable.",
+                    low: "Ethereal form destabilizing. Recommend increased light sleep.",
+                    poor: "Phantom presence fading. Insufficient light sleep for maintenance."
+                },
+                "PERFECT_SPECIMEN": {
+                    high: "Perfect mitochondrial harmony achieved. Transcendent evolution imminent.",
+                    good: "Superior development across all systems. Perfect balance maintaining.",
+                    medium: "Exceptional balance temporarily reduced. Restoration processes activated.",
+                    low: "Perfect specimen characteristics diminishing. Balanced sleep required urgently.",
+                    poor: "Perfect specimen degrading to standard pattern. Balanced sleep cycle critical."
+                }
+            };
+            
+            // Select the appropriate message based on quality
+            let qualityLevel;
+            if (quality >= 90) qualityLevel = "high";
+            else if (quality >= 75) qualityLevel = "good";
+            else if (quality >= 60) qualityLevel = "medium";
+            else if (quality >= 40) qualityLevel = "low";
+            else qualityLevel = "poor";
+            
+            // Return the message for this pattern and quality
+            if (messages[pattern] && messages[pattern][qualityLevel]) {
+                return messages[pattern][qualityLevel];
+            } else {
+                // Fallback to standard messages if pattern not found
+                return messages.STANDARD[qualityLevel];
+            }
+        }
+        
+        // Charts
+        let sleepQualityChart = null;
+        let statsChart = null;
+        
+        function initCharts() {
+            const sleepChartCtx = document.getElementById('sleep-chart').getContext('2d');
+            const statsChartCtx = document.getElementById('stats-chart').getContext('2d');
+            
+            // Set Chart.js defaults for both charts
+            Chart.defaults.color = '#f0f0f0';
+            Chart.defaults.borderColor = '#1a1a1a';
+            Chart.defaults.font.family = "'Share Tech Mono', monospace";
+            
+            // Sleep Quality Chart
+            sleepQualityChart = new Chart(sleepChartCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Sleep Quality',
+                        data: [],
+                        borderColor: '#8a0303',
+                        backgroundColor: 'rgba(138, 3, 3, 0.1)',
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(50, 50, 50, 0.2)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Stats Chart
+            statsChart = new Chart(statsChartCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Power',
+                            data: [],
+                            borderColor: '#8a0303',
+                            backgroundColor: 'rgba(138, 3, 3, 0.0)',
+                            borderWidth: 2,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Stability',
+                            data: [],
+                            borderColor: '#1a7a1a',
+                            backgroundColor: 'rgba(26, 122, 26, 0.0)',
+                            borderWidth: 2,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Adaptation',
+                            data: [],
+                            borderColor: '#3a5aaa',
+                            backgroundColor: 'rgba(58, 90, 170, 0.0)',
+                            borderWidth: 2,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Resonance',
+                            data: [],
+                            borderColor: '#6a3aaa',
+                            backgroundColor: 'rgba(106, 58, 170, 0.0)',
+                            borderWidth: 2,
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(50, 50, 50, 0.2)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateCharts() {
+            if (!sleepQualityChart || !statsChart) {
+                initCharts();
+            }
+            
+            // Get the data for the charts
+            const sleepQualityData = gameState.history.sleepQuality || [];
+            const statsData = gameState.history.stats || [];
+            
+            // Limit to last 10 entries for cleaner charts
+            const sleepQualityLimit = sleepQualityData.slice(-10);
+            const statsLimit = statsData.slice(-10);
+            
+            // Update Sleep Quality Chart
+            sleepQualityChart.data.labels = sleepQualityLimit.map(entry => `Day ${entry.day}`);
+            sleepQualityChart.data.datasets[0].data = sleepQualityLimit.map(entry => entry.quality);
+            sleepQualityChart.update();
+            
+            // Update Stats Chart
+            statsChart.data.labels = statsLimit.map(entry => `Day ${entry.day}`);
+            statsChart.data.datasets[0].data = statsLimit.map(entry => entry.power);
+            statsChart.data.datasets[1].data = statsLimit.map(entry => entry.stability);
+            statsChart.data.datasets[2].data = statsLimit.map(entry => entry.adaptation);
+            statsChart.data.datasets[3].data = statsLimit.map(entry => entry.resonance);
+            statsChart.update();
+        }
+        
+        // Tab functionality for main tabs
+        function openMainTab(event, tabName) {
+            // Hide all main tab content
+            const tabContent = document.getElementsByClassName('main-tab-content');
+            for (let i = 0; i < tabContent.length; i++) {
+                tabContent[i].classList.remove('active');
+            }
+            
+            // Remove active class from all main tab links
+            const tabLinks = document.getElementsByClassName('main-tab');
+            for (let i = 0; i < tabLinks.length; i++) {
+                tabLinks[i].classList.remove('active');
+            }
+            
+            // Show the selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to the clicked tab
+            event.currentTarget.classList.add('active');
+            
+            // Force chart resize if needed
+            if (tabName === 'analysis-tab') {
+                if (sleepQualityChart) sleepQualityChart.resize();
+                if (statsChart) statsChart.resize();
+                if (window.forecastChart) window.forecastChart.resize();
+                
+                // Update analysis tab content
+                updateAnalysisContent();
+            }
+            
+            // Update prediction data when status tab is opened
+            if (tabName === 'status-tab') {
+                updatePredictions();
+            }
+            
+            // Update records tab content when opened
+            if (tabName === 'records-tab') {
+                updateRecordsUI();
+                updateAchievementsUI();
+            }
+            
+            // Update prestige information when data tab is opened
+            if (tabName === 'data-tab') {
+                checkPrestigeAvailability();
+                updateAffinityUI();
+            }
+        }
+        
+        // Tab functionality for chart tabs
+        function openChartTab(event, tabName) {
+            // Hide all chart tab content
+            const tabContent = document.getElementsByClassName('chart-tab-content');
+            for (let i = 0; i < tabContent.length; i++) {
+                tabContent[i].classList.remove('active');
+            }
+            
+            // Remove active class from all chart tab links
+            const tabLinks = document.querySelectorAll('.chart-tab .tab-link');
+            for (let i = 0; i < tabLinks.length; i++) {
+                tabLinks[i].classList.remove('active', 'bg-parasite-red', 'bg-opacity-20');
+            }
+            
+            // Show the selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to the clicked tab
+            event.currentTarget.classList.add('active', 'bg-parasite-red', 'bg-opacity-20');
+            
+            // Force chart resize if needed
+            if (tabName === 'sleep-quality-tab' && sleepQualityChart) {
+                sleepQualityChart.resize();
+            } else if (tabName === 'stats-tab' && statsChart) {
+                statsChart.resize();
+            } else if (tabName === 'forecast-tab') {
+                initForecastChart();
+            }
+        }
+        
+        // Initialize forecast chart
+        function initForecastChart() {
+            const forecastChartCtx = document.getElementById('forecast-chart').getContext('2d');
+            
+            // If chart already exists, destroy it first
+            if (window.forecastChart) {
+                window.forecastChart.destroy();
+            }
+            
+            // Get historical data
+            const statsData = gameState.history.stats || [];
+            if (statsData.length < 3) {
+                // Not enough data for prediction
+                forecastChartCtx.fillStyle = 'rgba(138, 3, 3, 0.1)';
+                forecastChartCtx.fillRect(0, 0, forecastChartCtx.canvas.width, forecastChartCtx.canvas.height);
+                forecastChartCtx.fillStyle = '#f0f0f0';
+                forecastChartCtx.font = '14px "Share Tech Mono"';
+                forecastChartCtx.textAlign = 'center';
+                forecastChartCtx.fillText('Not enough data for prediction.', forecastChartCtx.canvas.width/2, forecastChartCtx.canvas.height/2);
+                return;
+            }
+            
+            // Prepare data for prediction (last 7 days or all if less)
+            const dataPoints = Math.min(statsData.length, 7);
+            const recentStats = statsData.slice(-dataPoints);
+            
+            // Calculate predictions for next 5 days
+            const predictionDays = 5;
+            const predictions = calculatePredictions(recentStats, predictionDays);
+            
+            // Prepare chart data
+            const labels = [];
+            const powerData = [];
+            const stabilityData = [];
+            const adaptationData = [];
+            const resonanceData = [];
+            
+            // Add historical data
+            recentStats.forEach(entry => {
+                labels.push(`Day ${entry.day}`);
+                powerData.push(entry.power);
+                stabilityData.push(entry.stability);
+                adaptationData.push(entry.adaptation);
+                resonanceData.push(entry.resonance);
+            });
+            
+            // Add prediction data with dashed line
+            for (let i = 0; i < predictionDays; i++) {
+                const nextDay = gameState.day + i;
+                labels.push(`Day ${nextDay}`);
+                powerData.push(predictions.power[i]);
+                stabilityData.push(predictions.stability[i]);
+                adaptationData.push(predictions.adaptation[i]);
+                resonanceData.push(predictions.resonance[i]);
+            }
+            
+            // Create chart
+            window.forecastChart = new Chart(forecastChartCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Power',
+                            data: powerData,
+                            borderColor: '#8a0303',
+                            backgroundColor: 'rgba(138, 3, 3, 0.0)',
+                            borderWidth: 2,
+                            segment: {
+                                borderDash: ctx => ctx.p0DataIndex >= recentStats.length - 1 ? [6, 6] : undefined
+                            }
+                        },
+                        {
+                            label: 'Stability',
+                            data: stabilityData,
+                            borderColor: '#1a7a1a',
+                            backgroundColor: 'rgba(26, 122, 26, 0.0)',
+                            borderWidth: 2,
+                            segment: {
+                                borderDash: ctx => ctx.p0DataIndex >= recentStats.length - 1 ? [6, 6] : undefined
+                            }
+                        },
+                        {
+                            label: 'Adaptation',
+                            data: adaptationData,
+                            borderColor: '#3a5aaa',
+                            backgroundColor: 'rgba(58, 90, 170, 0.0)',
+                            borderWidth: 2,
+                            segment: {
+                                borderDash: ctx => ctx.p0DataIndex >= recentStats.length - 1 ? [6, 6] : undefined
+                            }
+                        },
+                        {
+                            label: 'Resonance',
+                            data: resonanceData,
+                            borderColor: '#6a3aaa',
+                            backgroundColor: 'rgba(106, 58, 170, 0.0)',
+                            borderWidth: 2,
+                            segment: {
+                                borderDash: ctx => ctx.p0DataIndex >= recentStats.length - 1 ? [6, 6] : undefined
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(50, 50, 50, 0.2)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const idx = tooltipItems[0].dataIndex;
+                                    if (idx >= recentStats.length) {
+                                        return `${tooltipItems[0].label} (Predicted)`;
+                                    }
+                                    return tooltipItems[0].label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Calculate stat predictions using linear regression
+        function calculatePredictions(recentStats, daysToPredict) {
+            // Simple linear regression for each stat
+            const days = recentStats.map((_, i) => i);
+            
+            // Initialize prediction arrays
+            const predictions = {
+                power: [],
+                stability: [],
+                adaptation: [],
+                resonance: []
+            };
+            
+            // Calculate linear regression for each stat
+            const powerTrend = linearRegression(days, recentStats.map(s => s.power));
+            const stabilityTrend = linearRegression(days, recentStats.map(s => s.stability));
+            const adaptationTrend = linearRegression(days, recentStats.map(s => s.adaptation));
+            const resonanceTrend = linearRegression(days, recentStats.map(s => s.resonance));
+            
+            // Generate predictions for future days
+            for (let i = 0; i < daysToPredict; i++) {
+                const day = days.length + i;
+                // Ensure predictions don't exceed 100 or go below 0
+                const powerPred = Math.min(100, Math.max(0, Math.round(powerTrend.slope * day + powerTrend.intercept)));
+                const stabilityPred = Math.min(100, Math.max(0, Math.round(stabilityTrend.slope * day + stabilityTrend.intercept)));
+                const adaptationPred = Math.min(100, Math.max(0, Math.round(adaptationTrend.slope * day + adaptationTrend.intercept)));
+                const resonancePred = Math.min(100, Math.max(0, Math.round(resonanceTrend.slope * day + resonanceTrend.intercept)));
+                
+                predictions.power.push(powerPred);
+                predictions.stability.push(stabilityPred);
+                predictions.adaptation.push(adaptationPred);
+                predictions.resonance.push(resonancePred);
+            }
+            
+            return predictions;
+        }
+        
+        // Linear regression helper function
+        function linearRegression(x, y) {
+            const n = x.length;
+            let sumX = 0;
+            let sumY = 0;
+            let sumXY = 0;
+            let sumXX = 0;
+            
+            for (let i = 0; i < n; i++) {
+                sumX += x[i];
+                sumY += y[i];
+                sumXY += x[i] * y[i];
+                sumXX += x[i] * x[i];
+            }
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            return { slope, intercept };
+        }
+        
+        // Update predictions on status tab
+        function updatePredictions() {
+            // Update stat trend indicators
+            updateStatTrends();
+            
+            // Update evolution prediction
+            updateEvolutionPrediction();
+            
+            // Update pattern prediction
+            updatePatternPrediction();
+        }
+        
+        // Update stat trend indicators
+        function updateStatTrends() {
+            const statsData = gameState.history.stats || [];
+            if (statsData.length < 3) return; // Not enough data
+            
+            // Get last 3-5 data points for trend calculation
+            const dataPoints = Math.min(statsData.length, 5);
+            const recentStats = statsData.slice(-dataPoints);
+            
+            // Calculate trends
+            const days = recentStats.map((_, i) => i);
+            const powerTrend = linearRegression(days, recentStats.map(s => s.power));
+            const stabilityTrend = linearRegression(days, recentStats.map(s => s.stability));
+            const adaptationTrend = linearRegression(days, recentStats.map(s => s.adaptation));
+            const resonanceTrend = linearRegression(days, recentStats.map(s => s.resonance));
+            
+            // Update UI with trend arrows
+            updateTrendIndicator('power-prediction', powerTrend.slope);
+            updateTrendIndicator('stability-prediction', stabilityTrend.slope);
+            updateTrendIndicator('adaptation-prediction', adaptationTrend.slope);
+            updateTrendIndicator('resonance-prediction', resonanceTrend.slope);
+        }
+        
+        // Update trend indicator helper
+        function updateTrendIndicator(elementId, slope) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            let indicator, className;
+            if (slope > 0.5) {
+                indicator = '↑↑';
+                className = 'prediction-arrow-up';
+            } else if (slope > 0.1) {
+                indicator = '↑';
+                className = 'prediction-arrow-up';
+            } else if (slope < -0.5) {
+                indicator = '↓↓';
+                className = 'prediction-arrow-down';
+            } else if (slope < -0.1) {
+                indicator = '↓';
+                className = 'prediction-arrow-down';
+            } else {
+                indicator = '→';
+                className = 'prediction-arrow-stable';
+            }
+            
+            element.textContent = indicator;
+            element.className = `text-xs ${className}`;
+        }
+        
+        // Update evolution stage prediction
+        function updateEvolutionPrediction() {
+            const evolutionPrediction = document.getElementById('evolution-prediction');
+            if (!evolutionPrediction) return;
+            
+            const statsData = gameState.history.stats || [];
+            if (statsData.length < 3) {
+                evolutionPrediction.textContent = "Insufficient data for prediction.";
+                return;
+            }
+            
+            // Calculate average power (mitochondria power)
+            const predictions = calculatePredictions(statsData.slice(-5), 5);
+            const avgPower = (
+                predictions.power[4] + 
+                predictions.stability[4] + 
+                predictions.adaptation[4] + 
+                predictions.resonance[4]
+            ) / 4;
+            
+            // Determine next evolution stage
+            let nextStage = gameState.evolutionStage;
+            let daysToEvolve = "unknown";
+            
+            // Check if already at max evolution
+            if (gameState.evolutionStage === 9) {
+                evolutionPrediction.textContent = "Maximum evolution stage reached.";
+                return;
+            }
+            
+            // Find next stage threshold
+            // Adjusted thresholds for prestige systems
+            const prestigeBonus = Math.min(10, gameState.prestigeLevel * 2);
+            let thresholds;
+            
+            if (gameState.prestigeLevel >= 5) {
+                // Higher prestige makes evolution faster
+                thresholds = [15, 30, 45, 60, 73, 83, 90, 95, 98].map(t => Math.max(5, t - prestigeBonus));
+            } else {
+                thresholds = [20, 35, 50, 65, 78, 85, 90, 95, 98].map(t => Math.max(5, t - prestigeBonus));
+            }
+            
+            const nextThreshold = thresholds[gameState.evolutionStage];
+            
+            // Calculate days until next evolution
+            const recentData = statsData.slice(-5);
+            const days = recentData.map((_, i) => i);
+            const powers = recentData.map(s => (s.power + s.stability + s.adaptation + s.resonance) / 4);
+            const trend = linearRegression(days, powers);
+            
+            if (trend.slope <= 0) {
+                evolutionPrediction.textContent = "Growth stalled. Improve sleep quality to evolve.";
+            } else {
+                // Estimate days until reaching next threshold
+                const currentPower = gameState.mitochondriaPower;
+                const daysEstimate = Math.ceil((nextThreshold - currentPower) / trend.slope);
+                
+                if (daysEstimate <= 0) {
+                    evolutionPrediction.textContent = "Evolution imminent. Submit sleep data to trigger evolution.";
+                } else if (daysEstimate < 10) {
+                    evolutionPrediction.textContent = `Evolution to ${evolutionStages[gameState.evolutionStage + 1]} in approximately ${daysEstimate} days.`;
+                } else {
+                    evolutionPrediction.textContent = `Evolution to ${evolutionStages[gameState.evolutionStage + 1]} will take longer than 10 days at current rate.`;
+                }
+            }
+        }
+        
+        // Update pattern prediction
+        function updatePatternPrediction() {
+            const patternPrediction = document.getElementById('pattern-prediction');
+            if (!patternPrediction) return;
+            
+            const statsData = gameState.history.stats || [];
+            if (statsData.length < 3) {
+                patternPrediction.textContent = "Insufficient data for prediction.";
+                return;
+            }
+            
+            // Calculate 5-day predictions
+            const predictions = calculatePredictions(statsData.slice(-5), 5);
+            const finalStats = {
+                power: predictions.power[4],
+                stability: predictions.stability[4],
+                adaptation: predictions.adaptation[4],
+                resonance: predictions.resonance[4]
+            };
+            
+            // Determine which pattern is likely to develop
+            let predictedPattern = "STANDARD";
+            let confidence = "low";
+            
+            // Calculate standard deviation to detect imbalance
+            const values = Object.values(finalStats);
+            const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+            const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
+            const stdDev = Math.sqrt(variance);
+            
+            // Check for pattern conditions similar to detectEvolutionPattern function
+            if (finalStats.power >= 85 && finalStats.stability >= 85 && 
+                finalStats.adaptation >= 85 && finalStats.resonance >= 85) {
+                predictedPattern = "PERFECT_SPECIMEN";
+                confidence = "high";
+            } else if (finalStats.adaptation >= 70 && finalStats.adaptation > finalStats.stability * 1.4 && 
+                     finalStats.adaptation > finalStats.power * 1.2) {
+                predictedPattern = "NEURAL_AMPLIFIER";
+                confidence = "medium";
+            } else if (finalStats.stability >= 70 && finalStats.stability > finalStats.adaptation * 1.4) {
+                predictedPattern = "CELLULAR_FORTRESS";
+                confidence = "medium";
+            } else if (finalStats.resonance >= 75 && finalStats.resonance > finalStats.adaptation * 1.2 && 
+                     finalStats.resonance > finalStats.stability * 1.2) {
+                predictedPattern = "HARMONIC_SYMBIOTE";
+                confidence = "medium";
+            } else if (stdDev > 25 && finalStats.adaptation > 50) {
+                predictedPattern = "ABERRANT_MUTATION";
+                confidence = "medium";
+            } else if (finalStats.adaptation >= 65 && finalStats.stability >= 65 && 
+                     finalStats.adaptation > finalStats.resonance * 1.3) {
+                predictedPattern = "CEREBRAL_COLONIZER";
+                confidence = "medium";
+            } else if (finalStats.resonance >= 60 && finalStats.stability >= 40 && 
+                     finalStats.adaptation >= 40 && finalStats.power < 50) {
+                predictedPattern = "PHANTOM_PARASITE";
+                confidence = "medium";
+            } else {
+                // Check which pattern is closest to forming based on highest stats
+                if (finalStats.adaptation > 60 && finalStats.adaptation > finalStats.stability * 1.2) {
+                    predictedPattern = "NEURAL_AMPLIFIER";
+                    confidence = "low";
+                } else if (finalStats.stability > 60 && finalStats.stability > finalStats.adaptation * 1.2) {
+                    predictedPattern = "CELLULAR_FORTRESS";
+                    confidence = "low";
+                } else if (finalStats.resonance > 60 && finalStats.resonance > Math.max(finalStats.stability, finalStats.adaptation)) {
+                    predictedPattern = "HARMONIC_SYMBIOTE";
+                    confidence = "low";
+                } else {
+                    predictedPattern = "STANDARD";
+                    confidence = "high";
+                }
+            }
+            
+            // If current pattern is the same as predicted
+            if (predictedPattern === gameState.evolutionPattern) {
+                patternPrediction.textContent = `Current ${evolutionPatterns[predictedPattern].name} pattern will likely persist.`;
+            } else {
+                patternPrediction.textContent = `Pattern may evolve to ${evolutionPatterns[predictedPattern].name} type (${confidence} confidence).`;
+            }
+        }
+        
+        // Update analysis tab content
+        function updateAnalysisContent() {
+            // Update pattern info
+            const currentPattern = document.getElementById('current-pattern');
+            const patternDescription = document.getElementById('pattern-description');
+            const patternSuggestions = document.getElementById('pattern-suggestions');
+            
+            if (currentPattern && patternDescription && patternSuggestions) {
+                const pattern = gameState.evolutionPattern;
+                const patternInfo = evolutionPatterns[pattern] || evolutionPatterns.STANDARD;
+                
+                currentPattern.textContent = patternInfo.name + " Type";
+                patternDescription.textContent = patternInfo.description;
+                
+                // Add pattern-specific suggestions
+                patternSuggestions.innerHTML = '';
+                const suggestions = getPatternSuggestions(pattern);
+                suggestions.forEach(suggestion => {
+                    const li = document.createElement('li');
+                    li.textContent = suggestion;
+                    patternSuggestions.appendChild(li);
+                });
+            }
+            
+            // Initialize forecast chart
+            initForecastChart();
+        }
+        
+        // Get pattern-specific suggestions
+        function getPatternSuggestions(pattern) {
+            const suggestions = {
+                "STANDARD": [
+                    "Maintain balanced sleep cycles with even distribution of sleep stages.",
+                    "Aim for 7-9 hours of total sleep time.",
+                    "Try to reach 90-120 minutes of deep sleep each night.",
+                    "Keep REM sleep between 90-120 minutes for optimal brain function."
+                ],
+                "NEURAL_AMPLIFIER": [
+                    "Focus on maximizing REM sleep (>120 minutes if possible).",
+                    "Consider keeping a dream journal to enhance neural connectivity.",
+                    "Avoid sleep disruptions that might interrupt REM cycles.",
+                    "Consider sleep techniques that extend REM periods (longer sleep duration)."
+                ],
+                "CELLULAR_FORTRESS": [
+                    "Prioritize deep sleep (>120 minutes per night).",
+                    "Avoid alcohol and stimulants that reduce deep sleep quality.",
+                    "Consider physical exercise earlier in the day to enhance deep sleep.",
+                    "Maintain consistent sleep and wake times to stabilize sleep architecture."
+                ],
+                "HARMONIC_SYMBIOTE": [
+                    "Focus on total sleep duration (>8 hours recommended).",
+                    "Create optimal sleep environment with minimal disruptions.",
+                    "Consider sleep tracking accessories to optimize overall harmony.",
+                    "Consistent sleep schedule is essential for maintaining resonance."
+                ],
+                "ABERRANT_MUTATION": [
+                    "Experiment with varied sleep patterns to stimulate unusual development.",
+                    "Consider polyphasic sleep experiments (cautiously).",
+                    "Unpredictable growth may occur with varied sleep environments.",
+                    "Monitor for unusual sleep phenomena and report them for analysis."
+                ],
+                "CEREBRAL_COLONIZER": [
+                    "Balance REM and deep sleep equally (90-120 minutes each).",
+                    "Consider cognitive activities before sleep to enhance neural plasticity.",
+                    "Physical recovery focus with mental stimulation for optimal growth.",
+                    "Alternate between mentally and physically demanding days."
+                ],
+                "PHANTOM_PARASITE": [
+                    "Maximize light sleep periods (240+ minutes per night).",
+                    "Consider meditation before sleep to enhance subtle influences.",
+                    "Longer total sleep time with emphasis on transitional sleep stages.",
+                    "Experiment with lucid dreaming techniques to strengthen connection."
+                ],
+                "PERFECT_SPECIMEN": [
+                    "Maintain the perfect balance across all sleep stages.",
+                    "Optimize sleep environment to preserve exceptional sleep quality.",
+                    "Be cautious of any changes that could disrupt the balanced state.",
+                    "Consider advanced sleep monitoring to maintain peak development."
+                ]
+            };
+            
+            return suggestions[pattern] || suggestions.STANDARD;
+        }
+        
+        // Update records UI
+        function updateRecordsUI() {
+            // Update lifetime statistics
+            document.getElementById('total-playthroughs').textContent = gameState.lifetimeStats.totalPlaythroughs;
+            document.getElementById('total-days').textContent = gameState.lifetimeStats.totalDays;
+            document.getElementById('highest-prestige').textContent = gameState.lifetimeStats.highestPrestige;
+            document.getElementById('highest-evolution').textContent = gameState.lifetimeStats.highestEvolutionStageName;
+            
+            // Update best stats ever achieved
+            document.getElementById('best-power').textContent = gameState.lifetimeStats.bestStats.power;
+            document.getElementById('best-stability').textContent = gameState.lifetimeStats.bestStats.stability;
+            document.getElementById('best-adaptation').textContent = gameState.lifetimeStats.bestStats.adaptation;
+            document.getElementById('best-resonance').textContent = gameState.lifetimeStats.bestStats.resonance;
+            document.getElementById('best-mitochondria').textContent = gameState.lifetimeStats.bestStats.mitochondriaPower;
+            
+            // Update sleep quality records
+            document.getElementById('best-sleep-quality').textContent = gameState.lifetimeStats.sleepQuality.best + '%';
+            document.getElementById('avg-sleep-quality').textContent = gameState.lifetimeStats.sleepQuality.average + '%';
+            document.getElementById('perfect-sleep-streaks').textContent = gameState.lifetimeStats.sleepQuality.perfectStreaks;
+        }
+        
+        // Update achievements UI
+        function updateAchievementsUI() {
+            const achievementsContainer = document.getElementById('achievements-container');
+            if (!achievementsContainer) return;
+            
+            // Clear existing achievements
+            achievementsContainer.innerHTML = '';
+            
+            // Loop through all possible achievements
+            Object.keys(gameState.achievements).forEach(key => {
+                const achieved = gameState.achievements[key];
+                const definition = achievementDefinitions[key];
+                
+                if (!definition) return; // Skip if no definition found
+                
+                // Create achievement element
+                const achievementElement = document.createElement('div');
+                achievementElement.className = `badge ${achieved ? '' : 'badge-locked'}`;
+                
+                const titleElement = document.createElement('div');
+                titleElement.className = 'badge-title';
+                titleElement.textContent = definition.title;
+                
+                const descriptionElement = document.createElement('div');
+                descriptionElement.className = 'badge-description';
+                descriptionElement.textContent = definition.description;
+                
+                achievementElement.appendChild(titleElement);
+                achievementElement.appendChild(descriptionElement);
+                
+                achievementsContainer.appendChild(achievementElement);
+            });
+        }
+        
+        // Export/Import functionality
+        document.getElementById('export-btn').addEventListener('click', function() {
+            const exportContainer = document.getElementById('export-container');
+            const importContainer = document.getElementById('import-container');
+            
+            importContainer.classList.add('hidden');
+            if (exportContainer.classList.contains('hidden')) {
+                exportContainer.classList.remove('hidden');
+                const gameStateString = JSON.stringify(gameState);
+                const encoded = btoa(gameStateString);
+                document.getElementById('export-data').value = encoded;
+            } else {
+                exportContainer.classList.add('hidden');
+            }
+        });
+        
+        document.getElementById('import-btn').addEventListener('click', function() {
+            const exportContainer = document.getElementById('export-container');
+            const importContainer = document.getElementById('import-container');
+            
+            exportContainer.classList.add('hidden');
+            if (importContainer.classList.contains('hidden')) {
+                importContainer.classList.remove('hidden');
+            } else {
+                importContainer.classList.add('hidden');
+            }
+        });
+        
+        document.getElementById('confirm-import').addEventListener('click', function() {
+            const importData = document.getElementById('import-data').value.trim();
+            if (!importData) {
+                alert('Please enter valid save data');
+                return;
+            }
+            
+            try {
+                const decoded = atob(importData);
+                const importedState = JSON.parse(decoded);
+                
+                // Validate basic structure to ensure it's a valid save
+                if (importedState && 
+                    typeof importedState === 'object' && 
+                    'day' in importedState && 
+                    'evolutionStage' in importedState &&
+                    'sleepLog' in importedState) {
+                    
+                    // Ensure all required properties exist in imported data
+                    if (!importedState.history) {
+                        importedState.history = {
+                            sleepQuality: [],
+                            stats: []
+                        };
+                    }
+                    
+                    if (!importedState.lifetimeStats) {
+                        importedState.lifetimeStats = {
+                            totalDays: importedState.day,
+                            totalPlaythroughs: 1,
+                            highestPrestige: 0,
+                            highestEvolutionStage: importedState.evolutionStage,
+                            highestEvolutionStageName: evolutionStages[importedState.evolutionStage],
+                            bestStats: {
+                                power: importedState.powerStat,
+                                stability: importedState.stabilityStat,
+                                adaptation: importedState.adaptationStat,
+                                resonance: importedState.resonanceStat,
+                                mitochondriaPower: importedState.mitochondriaPower
+                            },
+                            sleepQuality: {
+                                best: 0,
+                                average: 0,
+                                totalEntries: 0,
+                                perfectStreaks: 0
+                            }
+                        };
+                    }
+                    
+                    if (!importedState.achievements) {
+                        importedState.achievements = {};
+                        // Initialize default achievements based on game state
+                    }
+                    
+                    if (!importedState.prestigeLevel) {
+                        importedState.prestigeLevel = 0;
+                    }
+                    
+                    if (!importedState.prestigeAffinities && importedState.prestigeLevel > 0) {
+                        importedState.prestigeAffinities = {
+                            power: 0.05,
+                            stability: 0.05,
+                            adaptation: 0.05,
+                            resonance: 0.05
+                        };
+                    }
+                    
+                    if (!importedState.sleepPatterns) {
+                        importedState.sleepPatterns = {
+                            remFocus: 0,
+                            deepFocus: 0,
+                            lightFocus: 0,
+                            totalSleepFocus: 0,
+                            qualityFocus: 0,
+                            consistency: 0
+                        };
+                    }
+                    
+                    if (!importedState.currentStreak) {
+                        importedState.currentStreak = {
+                            perfectSleep: 0
+                        };
+                    }
+                    
+                    // Update game state
+                    gameState = importedState;
+                    
+                    // Save imported state
+                    saveGameState();
+                    
+                    // Update UI and charts
+                    updateUI();
+                    updateCharts();
+                    updateAffinityUI();
+                    updateRecordsUI();
+                    updateAchievementsUI();
+                    checkPrestigeAvailability();
+                    
+                    // Hide import container
+                    document.getElementById('import-container').classList.add('hidden');
+                    
+                    // Clear import field
+                    document.getElementById('import-data').value = '';
+                    
+                    // Show success message
+                    generateStatusMessage(100);
+                    document.getElementById('status-message').textContent = "Save data imported successfully!";
+                } else {
+                    throw new Error('Invalid save data structure');
+                }
+            } catch (e) {
+                console.error('Import error:', e);
+                alert('Error importing save data: ' + e.message);
+            }
+        });
+        
+        // Save game state function
+        function saveGameState() {
+            try {
+                localStorage.setItem('parasiteState', JSON.stringify(gameState));
+            } catch (e) {
+                console.log('Error saving game state: ' + e.message);
+            }
+        }
+        
+        // Check if prestige is available
+        function checkPrestigeAvailability() {
+            const prestigeContainer = document.getElementById('prestige-container');
+            
+            // Prestige becomes available when reaching TRANSCENDENT stage (index 5)
+            if (gameState.evolutionStage >= 5) {
+                prestigeContainer.classList.remove('hidden');
+                prestigeContainer.classList.add('prestige-ready');
+                
+                // Update prestige stats
+                document.getElementById('current-prestige-level').textContent = gameState.prestigeLevel;
+                document.getElementById('next-prestige-level').textContent = gameState.prestigeLevel + 1;
+                const statBonus = (gameState.prestigeLevel * 5);
+                document.getElementById('stat-multiplier').textContent = `+${statBonus}%`;
+                
+                // Display affinity info if prestiged before
+                if (gameState.prestigeAffinities) {
+                    updateAffinityUI();
+                }
+            } else {
+                prestigeContainer.classList.add('hidden');
+                prestigeContainer.classList.remove('prestige-ready');
+            }
+        }
+        
+        // Prestige button click handler
+        document.getElementById('prestige-btn').addEventListener('click', function() {
+            // Calculate predicted affinities for next cycle
+            const predictedAffinities = generatePrestigeAffinities();
+            
+            // Display affinity preview
+            const affinityPreviewContent = document.getElementById('affinity-preview-content');
+            if (affinityPreviewContent) {
+                affinityPreviewContent.innerHTML = `
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div class="flex items-center">
+                        <span class="affinity-indicator mr-1 ${getAffinityClass(predictedAffinities.power)}"></span>
+                        Power Bonus:
+                    </div>
+                    <div class="text-right">+${Math.round(predictedAffinities.power * 100)}%</div>
+                    
+                    <div class="flex items-center">
+                        <span class="affinity-indicator mr-1 ${getAffinityClass(predictedAffinities.stability)}"></span>
+                        Stability Bonus:
+                    </div>
+                    <div class="text-right">+${Math.round(predictedAffinities.stability * 100)}%</div>
+                    
+                    <div class="flex items-center">
+                        <span class="affinity-indicator mr-1 ${getAffinityClass(predictedAffinities.adaptation)}"></span>
+                        Adaptation Bonus:
+                    </div>
+                    <div class="text-right">+${Math.round(predictedAffinities.adaptation * 100)}%</div>
+                    
+                    <div class="flex items-center">
+                        <span class="affinity-indicator mr-1 ${getAffinityClass(predictedAffinities.resonance)}"></span>
+                        Resonance Bonus:
+                    </div>
+                    <div class="text-right">+${Math.round(predictedAffinities.resonance * 100)}%</div>
+                </div>
+                `;
+            }
+            
+            // Open confirmation modal
+            document.getElementById('prestige-modal').style.display = 'block';
+        });
+        
+        // Helper function to get affinity indicator class
+        function getAffinityClass(affinity) {
+            if (affinity >= 0.08) return 'affinity-strong';
+            if (affinity >= 0.05) return 'affinity-medium';
+            if (affinity >= 0.03) return 'affinity-neutral';
+            return 'affinity-weak';
+        }
+        
+        // Confirm prestige button click handler
+        document.getElementById('confirm-prestige-btn').addEventListener('click', function() {
+            // Process prestige
+            performPrestige();
+            
+            // Close modal
+            closeModal('prestige-modal');
+        });
+        
+        // Perform prestige
+        function performPrestige() {
+            // Generate affinities based on sleep patterns
+            const newAffinities = generatePrestigeAffinities();
+            
+            // Update lifetime stats before resetting
+            if (gameState.evolutionStage > gameState.lifetimeStats.highestEvolutionStage) {
+                gameState.lifetimeStats.highestEvolutionStage = gameState.evolutionStage;
+                gameState.lifetimeStats.highestEvolutionStageName = evolutionStages[gameState.evolutionStage];
+            }
+            
+            // Increment prestige level
+            gameState.prestigeLevel++;
+            
+            // Update highest prestige record
+            if (gameState.prestigeLevel > gameState.lifetimeStats.highestPrestige) {
+                gameState.lifetimeStats.highestPrestige = gameState.prestigeLevel;
+            }
+            
+            // Increment total playthroughs
+            gameState.lifetimeStats.totalPlaythroughs++;
+            
+            // Check for prestige achievements
+            if (!gameState.achievements.firstPrestige) {
+                gameState.achievements.firstPrestige = true;
+            }
+            
+            if (gameState.prestigeLevel >= 5 && !gameState.achievements.prestige5) {
+                gameState.achievements.prestige5 = true;
+            }
+            
+            if (gameState.prestigeLevel >= 10 && !gameState.achievements.prestige10) {
+                gameState.achievements.prestige10 = true;
+            }
+            
+            // Check for special achievements
+            if (gameState.evolutionStage === 9) {
+                if (gameState.achievements.reachGodlike) {
+                    gameState.achievements.reachGodstageTwice = true;
+                }
+            }
+            
+            // Store current state values that need preservation
+            const prestigeLevel = gameState.prestigeLevel;
+            const lifetimeStats = gameState.lifetimeStats;
+            const achievements = gameState.achievements;
+            
+            // Reset game state
+            gameState = {
+                day: 1,
+                evolutionStage: 0,
+                evolutionPattern: "STANDARD",
+                powerStat: 0,
+                stabilityStat: 0,
+                adaptationStat: 0,
+                resonanceStat: 0,
+                mitochondriaPower: 0,
+                sleepLog: [],
+                history: {
+                    sleepQuality: [],
+                    stats: []
+                },
+                prestigeLevel: prestigeLevel,
+                prestigeAffinities: newAffinities,
+                sleepPatterns: {
+                    remFocus: 0,
+                    deepFocus: 0,
+                    lightFocus: 0,
+                    totalSleepFocus: 0,
+                    qualityFocus: 0,
+                    consistency: 0
+                },
+                lifetimeStats: lifetimeStats,
+                achievements: achievements,
+                currentStreak: {
+                    perfectSleep: 0
+                }
+            };
+            
+            // Save game state
+            saveGameState();
+            
+            // Update UI
+            updateUI();
+            updateCharts();
+            updateAffinityUI();
+            updateRecordsUI();
+            updateAchievementsUI();
+            
+            // Hide prestige container
+            document.getElementById('prestige-container').classList.add('hidden');
+            
+            // Show prestige message
+            document.getElementById('status-message').textContent = 
+                `Prestige successful! You are now prestige level ${prestigeLevel} with unique affinities.`;
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Document click handler to save state
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'BUTTON') {
+                saveGameState();
+            }
+        });
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(e) {
+            const modals = document.getElementsByClassName('modal');
+            for (let i = 0; i < modals.length; i++) {
+                if (e.target === modals[i]) {
+                    modals[i].style.display = 'none';
+                }
+            }
+        });
+        
+        // Initialize charts
+        initCharts();
+        
+        // Update charts with initial data
+        updateCharts();
+        
+        // Update records UI
+        updateRecordsUI();
+        
+        // Update achievements UI
+        updateAchievementsUI();
+        
+        // Check prestige availability
+        checkPrestigeAvailability();
+    </script>
+</body>
+</html>

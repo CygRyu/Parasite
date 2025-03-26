@@ -1512,10 +1512,8 @@
         }
         
         function checkAchievements(sleepQuality) {
-            // First sleep data submission
-            if (!gameState.achievements.firstSleep && gameState.sleepLog.length > 0) {
-                gameState.achievements.firstSleep = true;
-            }
+            // First sleep data submission - always set this to true on first sleep entry
+            gameState.achievements.firstSleep = true;
             
             // Day-based achievements
             if (!gameState.achievements.tenDays && gameState.day >= 10) {
